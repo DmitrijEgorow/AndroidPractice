@@ -94,36 +94,66 @@ class InstrumentedTest {
             .check(matches(isDisplayed()))
         onView(withId(buttonSendId))
             .check(matches(isDisplayed()))
+
+        rotateDevice(true)
+
+        //todo add checks
+
+        rotateDevice(false)
+
         addTestToPass(1)
     }
 
     @Test
-    fun stringRes() {
+    fun checkRes() {
         //Check string resource
         addTestToStat(1)
         val mInstrumentation = InstrumentationRegistry.getInstrumentation()
         val appContext = mInstrumentation.targetContext
         Assert.assertNotEquals(
+            "Mismatch exception: 'app_name' resource does not exist",
             0,
             appContext.resources.getIdentifier(
-                "send_request",
+                "app_name",
+                "string",
+                appContext.opPackageName
+            ).toLong()
+        )
+
+        Assert.assertNotEquals(
+            "Mismatch exception: 'vertical' resource does not exist",
+            0,
+            appContext.resources.getIdentifier(
+                "vertical",
+                "string",
+                appContext.opPackageName
+            ).toLong()
+        )
+
+        Assert.assertNotEquals(
+            "Mismatch exception: 'horizontal' resource does not exist",
+            0,
+            appContext.resources.getIdentifier(
+                "horizontal",
                 "string",
                 appContext.opPackageName
             ).toLong()
         )
 
 
+        val colorResIds = arrayOf(0, 0, 0, 0, 0, 0, 0)
         for ((i, e) in colors.withIndex()) {
-            appContext.resources
+            colorResIds[i] = appContext.resources
                 .getIdentifier(e, "colors", appContext.opPackageName)
         }
-        if (twitterId != 0) {
-            appContext.getColor(twitterId)
-            Assert.assertEquals(
-                "$twitterId some message",
-                appContext.getColor(twitterId),
-                0xFFBB86FC
-            )
+        if (colorResIds.reduce(Int::times) != 0) {
+            for ((i, e) in colors.withIndex()) {
+                Assert.assertEquals(
+                    "Mismatch exception: $e as a color does not match the one in the task",
+                    appContext.getColor(colorResIds[i]),
+                    colorsCorrectValues[i]
+                )
+            }
         }
 
 
@@ -214,7 +244,10 @@ class InstrumentedTest {
         private var yearId = 0
         private var twitterId = 0
         private var rainbowIds = intArrayOf(0, 0, 0, 0, 0, 0, 0)
-        private var colors = arrayOf("red", "orange", "yellow", "green", "azure", "blue", "violet")
+        private var colors =
+            arrayOf("red", "orange", "yellow", "green", "azure", "blue", "violet")
+        private var colorsCorrectValues =
+            arrayOf(0xFF0000, 0xF6A630, 0xFFEB3B, 0x00ff00, 0x2196F3, 0x0000ff, 0x673AB7)
 
         @AfterClass
         @JvmStatic
