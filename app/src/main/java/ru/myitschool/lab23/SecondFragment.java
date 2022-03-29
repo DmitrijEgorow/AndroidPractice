@@ -13,7 +13,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
-import ru.myitschool.trajectory.databinding.FragmentSecondBinding;
+import ru.myitschool.lab23.databinding.FragmentSecondBinding;
 
 public class SecondFragment extends Fragment {
 

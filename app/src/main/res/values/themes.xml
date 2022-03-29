@@ -19,7 +19,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.TrajectoryFinal.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.Lab23.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="Theme.TrajectoryFinal.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.Lab23.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

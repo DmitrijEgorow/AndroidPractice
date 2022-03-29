@@ -49,7 +49,7 @@ class InstrumentedTest {
     fun setUp() {
         val mInstrumentation = InstrumentationRegistry.getInstrumentation()
         handler = DescriptionFailureHandler(mInstrumentation)
-        Espresso.setFailureHandler(handler);
+        Espresso.setFailureHandler(handler)
         val appContext = mInstrumentation.targetContext
         val intent = Intent(appContext, MainActivity::class.java)
         activityScenario = ActivityScenario.launch(intent)
@@ -160,49 +160,6 @@ class InstrumentedTest {
         addTestToPass(1)
     }
 
-    @Test
-    @Throws(InterruptedException::class)
-    fun shareTwitter() {
-        //Check empty text on startup
-        addTestToStat(4)
-
-        Intents.init()
-        Intents.intending(CoreMatchers.not(IntentMatchers.isInternal()))
-            .respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, null))
-
-        checkInterface(
-            intArrayOf(
-                editTextGithubId, buttonSendId, loginId,
-                yearId, twitterId
-            )
-        )
-
-
-        addTestToPass(4)
-        Intents.release()
-    }
-
-
-    @Test
-    @Throws(InterruptedException::class)
-    fun zCheckRequests() {
-        //Check empty text on startup
-        addTestToStat(8)
-        checkInterface(
-            intArrayOf(
-                editTextGithubId, buttonSendId, loginId,
-                yearId, twitterId
-            )
-        )
-
-        val mInstrumentation = InstrumentationRegistry.getInstrumentation()
-        val uiDevice = UiDevice.getInstance(mInstrumentation)
-
-        for (i in 0..n) {
-
-        }
-        addTestToPass(8)
-    }
 
     @Throws(InterruptedException::class)
     private fun rotateDevice(landscapeMode: Boolean) {
@@ -229,7 +186,7 @@ class InstrumentedTest {
     }
 
     companion object {
-        private const val APP_NAME = "TrajectoryFinal"
+        private const val APP_NAME = "Lab23"
         private const val THREAD_DELAY: Long = 4_700
         private const val BUTTON_SEND_TEXT = "Send Request"
         private const val EMPTY_STRING = ""
