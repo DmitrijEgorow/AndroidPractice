@@ -1,28 +1,27 @@
 package ru.myitschool.lab23
 
 import android.Manifest
-import android.app.Activity
 import android.app.Instrumentation
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.os.Bundle
+import android.os.LocaleList
 import android.util.Log
 import android.view.View
+import androidx.annotation.CallSuper
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.FailureHandler
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.base.DefaultFailureHandler
-import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.intent.matcher.IntentMatchers
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.UiDevice
-import org.hamcrest.CoreMatchers
 import org.hamcrest.Matcher
 import org.junit.*
 import org.junit.runner.RunWith
@@ -38,21 +37,43 @@ class InstrumentedTest {
     private var activityScenario: ActivityScenario<MainActivity>? = null
     private var handler: DescriptionFailureHandler? = null
 
+    private lateinit var appContext: Context
+
+    private lateinit var mInstrumentation: Instrumentation
+
+    // https://github.com/rainbowcake/rainbowcake
+
+
     private val n = 1 // number of iterations in each test
-
-
-    @get:Rule
-    var permissionRule = GrantPermissionRule.grant(Manifest.permission.ACCESS_NOTIFICATION_POLICY)
 
 
     @Before
     fun setUp() {
-        val mInstrumentation = InstrumentationRegistry.getInstrumentation()
+        mInstrumentation = InstrumentationRegistry.getInstrumentation()
         handler = DescriptionFailureHandler(mInstrumentation)
         Espresso.setFailureHandler(handler)
-        val appContext = mInstrumentation.targetContext
+
+
+
+
+        val nonLocalizedContext = mInstrumentation.targetContext
+        val configuration = nonLocalizedContext.resources.configuration
+        configuration.setLocale(Locale.UK)
+        //configuration.setLayoutDirection(Locale.UK)
+        appContext = nonLocalizedContext.createConfigurationContext(configuration)
+
+
         val intent = Intent(appContext, MainActivity::class.java)
         activityScenario = ActivityScenario.launch(intent)
+
+        Log.d("lang",  appContext.resources.getString(
+            appContext.resources.getIdentifier(
+                "main_text",
+                "string",
+                appContext.opPackageName
+            )
+        ))
+
         editTextGithubId = appContext.resources
             .getIdentifier("edit_text_github_login", "id", appContext.opPackageName)
         buttonSendId = appContext.resources
@@ -105,11 +126,20 @@ class InstrumentedTest {
     }
 
     @Test
-    fun checkRes() {
+    fun checkResPortrait() {
         //Check string resource
         addTestToStat(1)
-        val mInstrumentation = InstrumentationRegistry.getInstrumentation()
-        val appContext = mInstrumentation.targetContext
+
+
+        Thread.sleep(7_000)
+
+        /*onView(withId(
+
+            appContext.resources
+                .getIdentifier("text_view", "id", appContext.opPackageName)
+        ))
+            .check(matches(withText("Основной текст")))*/
+
         Assert.assertNotEquals(
             "Mismatch exception: 'app_name' resource does not exist",
             0,
@@ -161,6 +191,66 @@ class InstrumentedTest {
     }
 
 
+    @Test
+    fun checkResLandscape() {
+        //Check string resource
+        addTestToStat(1)
+
+
+        rotateDevice(true)
+        Thread.sleep(7_000)
+
+        Assert.assertNotEquals(
+            "Mismatch exception: 'app_name' resource does not exist",
+            0,
+            appContext.resources.getIdentifier(
+                "app_name",
+                "string",
+                appContext.opPackageName
+            ).toLong()
+        )
+
+        Assert.assertNotEquals(
+            "Mismatch exception: 'vertical' resource does not exist",
+            0,
+            appContext.resources.getIdentifier(
+                "vertical",
+                "string",
+                appContext.opPackageName
+            ).toLong()
+        )
+
+        Assert.assertNotEquals(
+            "Mismatch exception: 'horizontal' resource does not exist",
+            0,
+            appContext.resources.getIdentifier(
+                "horizontal",
+                "string",
+                appContext.opPackageName
+            ).toLong()
+        )
+
+
+        val colorResIds = arrayOf(0, 0, 0, 0, 0, 0, 0)
+        for ((i, e) in colors.withIndex()) {
+            colorResIds[i] = appContext.resources
+                .getIdentifier(e, "colors", appContext.opPackageName)
+        }
+        if (colorResIds.reduce(Int::times) != 0) {
+            for ((i, e) in colors.withIndex()) {
+                Assert.assertEquals(
+                    "Mismatch exception: $e as a color does not match the one in the task",
+                    appContext.getColor(colorResIds[i]),
+                    colorsCorrectValues[i]
+                )
+            }
+        }
+
+        rotateDevice(false)
+        addTestToPass(1)
+    }
+
+
     @Throws(InterruptedException::class)
     private fun rotateDevice(landscapeMode: Boolean) {
         if (landscapeMode) {
@@ -190,6 +280,8 @@ class InstrumentedTest {
         private const val THREAD_DELAY: Long = 4_700
         private const val BUTTON_SEND_TEXT = "Send Request"
         private const val EMPTY_STRING = ""
+        private const val TEXT = "Richard (red) Of (orange) York (yellow) Gave (green) Battle (blue) In (indigo) Vain (violet)"
+
         private var grade = 0
         private var totalTests = 0
         private var maxGrade = 0

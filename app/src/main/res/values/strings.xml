@@ -1,13 +1,21 @@
 <resources>
-    <string name="app_name">Lab23</string>
-    <string name="action_settings">Settings</string>
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="send_request">Send Request</string>
-    <string name="back">Go back</string>
+    <string name="app_name" translatable="false">Lab23</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <string name="floating_description">Share</string>
-    <string name="login">GitHub Login</string>
+    <string name="main_text">Основной текст</string>
+    <string name="action_settings">Настройки</string>
+
+    <string name="vertical">Вертикальное положение экрана</string>
+    <string name="horizontal">Горизонтальное положение экрана</string>
+    <string name="night">Ночной режим</string>
+
+    <string name="red">каждый</string>
+    <string name="orange">охотник</string>
+    <string name="yellow">желает</string>
+    <string name="green">знать</string>
+    <string name="azure">где</string>
+    <string name="blue">сидит</string>
+    <string name="violet">фазан</string>
+
+    <string name="phrase">Каждый Охотник Желает Знать Где Сидит Фазан</string>
+
 </resources>

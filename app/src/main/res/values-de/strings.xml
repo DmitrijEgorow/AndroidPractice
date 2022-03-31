@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="main_text">Mein text</string>
+    <string name="action_settings">S</string>
+    <string name="vertical">S</string>
+    <string name="horizontal">S</string>
+    <string name="night">S</string>
+
+    <string name="red">каждый</string>
+    <string name="orange">охотник</string>
+    <string name="yellow">желает</string>
+    <string name="green">знать</string>
+    <string name="azure">где</string>
+    <string name="blue">сидит</string>
+    <string name="violet">фазан</string>
+    <string name="phrase">S</string>
+
+</resources>
