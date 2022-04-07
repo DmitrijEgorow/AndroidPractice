@@ -1,20 +1,20 @@
 <resources>
     <string name="app_name" translatable="false">Lab23</string>
 
-    <string name="main_text">Основной текст</string>
+    <string name="main_text">Каждый Охотник Желает Знать Где Сидит Фазан</string>
     <string name="action_settings">Настройки</string>
 
     <string name="vertical">Вертикальное положение экрана</string>
     <string name="horizontal">Горизонтальное положение экрана</string>
     <string name="night">Ночной режим</string>
 
-    <string name="red">каждый</string>
+<!--    <string name="red">каждый</string>
     <string name="orange">охотник</string>
     <string name="yellow">желает</string>
     <string name="green">знать</string>
     <string name="azure">где</string>
     <string name="blue">сидит</string>
-    <string name="violet">фазан</string>
+    <string name="violet">фазан</string>-->
 
     <string name="phrase">Каждый Охотник Желает Знать Где Сидит Фазан</string>
 

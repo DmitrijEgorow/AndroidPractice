@@ -8,51 +8,65 @@
     tools:ignore="MissingDefaultResource">
 
     <TextView
-
+        android:id="@+id/main_text"
         style="@style/textViewStyle"
         android:layout_width="848dp"
         android:layout_height="wrap_content"
-        android:text="@string/horizontal" />
+        android:text="@string/main_text" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal">
+
         <LinearLayout
+            android:id="@+id/red"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/red"></LinearLayout>
+            android:background="@color/red" />
+
         <LinearLayout
+            android:id="@+id/orange"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/orange"></LinearLayout>
+            android:background="@color/orange" />
+
         <LinearLayout
+            android:id="@+id/yellow"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/yellow"></LinearLayout>
+            android:background="@color/yellow" />
+
         <LinearLayout
+            android:id="@+id/green"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/green"></LinearLayout>
+            android:background="@color/green" />
+
         <LinearLayout
+            android:id="@+id/azure"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/azure"></LinearLayout>
+            android:background="@color/azure" />
+
         <LinearLayout
+            android:id="@+id/blue"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/blue"></LinearLayout>
+            android:background="@color/blue" />
+
         <LinearLayout
+            android:id="@+id/violet"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/violet"></LinearLayout>
+            android:background="@color/violet" />
 
     </LinearLayout>
 </LinearLayout>
