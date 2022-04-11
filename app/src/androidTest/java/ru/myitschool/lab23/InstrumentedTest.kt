@@ -216,7 +216,7 @@ class InstrumentedTest {
 
     @Test
     fun checkResPortait() {
-        addTestToStat(1)
+        addTestToStat(2)
 
         checkInterface(
             rainbowIds
@@ -249,14 +249,14 @@ class InstrumentedTest {
 
 
 
-        addTestToPass(1)
+        addTestToPass(2)
     }
 
 
     @Test
     fun checkResLandscape() {
         //Check string resource
-        addTestToStat(1)
+        addTestToStat(3)
 
         checkInterface(
             rainbowIds
@@ -297,7 +297,7 @@ class InstrumentedTest {
 
         rotateDevice(false)
 
-        addTestToPass(1)
+        addTestToPass(3)
     }
 
 
