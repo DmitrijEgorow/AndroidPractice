@@ -3,17 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".MainActivity">
 
     <TableRow
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/main_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
             android:text="@string/main_text"
             android:textSize="16sp" />
     </TableRow>
@@ -21,11 +23,13 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/white"
             android:gravity="center"
             android:textAlignment="center" />
@@ -34,12 +38,14 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/red"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/red"
             android:gravity="center"
             android:textAlignment="center" />
@@ -48,11 +54,13 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/white"
             android:gravity="center"
             android:textAlignment="center" />
@@ -61,12 +69,14 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/orange"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/orange"
 
             android:gravity="center"
@@ -76,11 +86,13 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/white"
             android:gravity="center"
             android:textAlignment="center" />
@@ -89,14 +101,15 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/yellow"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/yellow"
-
             android:gravity="center"
             android:textAlignment="center" />
     </TableRow>
@@ -104,11 +117,13 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/white"
             android:gravity="center"
             android:textAlignment="center" />
@@ -117,26 +132,27 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/green"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/green"
-
-            android:gravity="center"
-            android:textAlignment="center" />
+            android:layout_weight="1"
+            android:background="@color/green" />
     </TableRow>
 
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/white"
             android:gravity="center"
             android:textAlignment="center" />
@@ -145,12 +161,14 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/azure"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/azure"
 
             android:gravity="center"
@@ -160,11 +178,13 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/white"
             android:gravity="center"
             android:textAlignment="center" />
@@ -173,14 +193,15 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/blue"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/blue"
-
             android:gravity="center"
             android:textAlignment="center" />
     </TableRow>
@@ -188,11 +209,13 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/white"
             android:gravity="center"
             android:textAlignment="center" />
@@ -201,14 +224,16 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/violet"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/violet"
+            android:layout_weight="1"
 
+            android:background="@color/violet"
             android:gravity="center"
             android:textAlignment="center" />
     </TableRow>
@@ -216,11 +241,13 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:weightSum="1">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@color/white"
             android:gravity="center"
             android:textAlignment="center" />

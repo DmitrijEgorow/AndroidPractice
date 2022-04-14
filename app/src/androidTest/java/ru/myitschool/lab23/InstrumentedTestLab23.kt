@@ -4,6 +4,7 @@ import android.app.Instrumentation
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.Typeface
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -18,6 +19,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.base.DefaultFailureHandler
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.LargeTest
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -29,14 +31,15 @@ import org.hamcrest.TypeSafeMatcher
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import ru.myitschool.lab23.Utils.hasTypefaceSpan
 import java.util.*
 import kotlin.math.min
 
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@SmallTest
-class InstrumentedTest {
+@LargeTest
+class InstrumentedTestLab23 {
     //add/remove seed
     private val random = Random()
     private var activityScenario: ActivityScenario<MainActivity>? = null
@@ -160,7 +163,7 @@ class InstrumentedTest {
             appContext.opPackageName
         )
 
-        if (mainTextLangId != 0){
+        if (mainTextLangId != 0) {
             Assert.assertEquals(
                 "Do you have correct qualifiers? ",
                 appContext.resources.getString(
@@ -392,7 +395,12 @@ class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandl
     override fun handle(error: Throwable?, viewMatcher: Matcher<View>?) {
         // Log anything you want here
         if (error != null) {
-            val newError = Throwable(extraMessage + "     " + error.message?.substring(0, min(530, error.message?.length?:0)) + "...", error.cause)
+            val newError = Throwable(
+                extraMessage + "     " + error.message?.substring(
+                    0,
+                    min(530, error.message?.length ?: 0)
+                ) + "...", error.cause
+            )
 
             // Then delegate the error handling to the default handler which will throw an exception
             delegate.handle(newError, viewMatcher)
