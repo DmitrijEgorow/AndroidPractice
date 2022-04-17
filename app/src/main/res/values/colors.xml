@@ -8,15 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-<!--    <color name="red">#4c4c4c</color>
-    <color name="orange">#b0b0b0</color>
-    <color name="yellow">#dcdcdc</color>
-    <color name="green">#959595</color>
-    <color name="azure">#7d7d7d</color>
-    <color name="blue">#1d1d1d</color>
-    <color name="violet">#555555</color>
-    <color name="text">#525252</color>-->
-
     <color name="red">#ff0000</color>
     <color name="orange">#F6A630</color>
     <color name="yellow">#FFEB3B</color>

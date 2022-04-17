@@ -4,7 +4,6 @@ import android.app.Instrumentation
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.graphics.Typeface
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -20,7 +19,6 @@ import androidx.test.espresso.base.DefaultFailureHandler
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType
@@ -31,7 +29,6 @@ import org.hamcrest.TypeSafeMatcher
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import ru.myitschool.lab23.Utils.hasTypefaceSpan
 import java.util.*
 import kotlin.math.min
 
@@ -74,16 +71,6 @@ class InstrumentedTestLab23 {
         val intent = Intent(appContext, MainActivity::class.java)
         activityScenario = ActivityScenario.launch(intent)
 
-        /*Log.d(
-            "Tests", appContext.resources.getString(
-                appContext.resources.getIdentifier(
-                    "main_text",
-                    "string",
-                    appContext.opPackageName
-                )
-            )
-        )*/
-
         mainTextId = appContext.resources
             .getIdentifier("main_text", "id", appContext.opPackageName)
         outerLayoutId = appContext.resources
@@ -111,8 +98,6 @@ class InstrumentedTestLab23 {
         checkInterface(
             intArrayOf(mainTextId)
         )
-        /*onView(withId(mainTextId))
-            .check(matches(isDisplayed()))*/
 
         onView(
             allOf(
@@ -132,8 +117,6 @@ class InstrumentedTestLab23 {
         )
             .check(matches(isDisplayed()))
 
-        //todo add checks for landscape mode
-
         rotateDevice(false)
 
         addTestToPass(1)
@@ -146,17 +129,6 @@ class InstrumentedTestLab23 {
         addTestToStat(1)
         /*onView(withId(mainTextId))
             .check(matches(isDisplayed()))*/
-
-        /*Log.d(
-            "Tests", appContext.resources.getString(
-                appContext.resources.getIdentifier(
-                    "main_text",
-                    "string",
-                    appContext.opPackageName
-                )
-            )
-        )*/
-
         val mainTextLangId = appContext.resources.getIdentifier(
             "main_text",
             "string",
@@ -187,15 +159,7 @@ class InstrumentedTestLab23 {
         //Check string resource
         addTestToStat(1)
 
-
         Thread.sleep(THREAD_DELAY)
-
-        /*onView(withId(
-
-            appContext.resources
-                .getIdentifier("text_view", "id", appContext.opPackageName)
-        ))
-            .check(matches(withText("Основной текст")))*/
 
 
         val colorResIds = arrayOf(0, 0, 0, 0, 0, 0, 0)
@@ -232,8 +196,6 @@ class InstrumentedTestLab23 {
             onView(withId(rainbowIds[i]))
                 .check(matches(isDisplayed()))
             if (i + 1 < colors.size) {
-                // onView(withId(rainbowIds[i+1]))
-                //    .check(matches(isDisplayed()))
                 onView(withId(rainbowIds[i + 1]))
                     .check(
                         isCompletelyBelow(
@@ -249,7 +211,6 @@ class InstrumentedTestLab23 {
                     withId(rainbowIds[0])
                 )
             )
-
 
 
         addTestToPass(2)
@@ -275,8 +236,6 @@ class InstrumentedTestLab23 {
             onView(withId(rainbowIds[i]))
                 .check(matches(isDisplayed()))
             if (i + 1 < colors.size) {
-                // onView(withId(rainbowIds[i+1]))
-                //    .check(matches(isDisplayed()))
                 onView(withId(rainbowIds[i + 1]))
                     .check(
                         isCompletelyRightOf(
@@ -293,13 +252,14 @@ class InstrumentedTestLab23 {
                 )
             )
 
+        handler?.extraMessage = "Does outer_layout contain all coloured views?"
         onView(withId(outerLayoutId))
             .check(
                 matches(hasChildCount(15))
             )
+        handler?.extraMessage = ""
 
         rotateDevice(false)
-
         addTestToPass(3)
     }
 
@@ -334,8 +294,6 @@ class InstrumentedTestLab23 {
         private const val MAIN_TEXT_RUS = "Каждый Охотник Желает Знать Где Сидит Фазан"
         private const val MAIN_TEXT_ENG = "Richard Of York Gave Battle In Vain"
         private const val EMPTY_STRING = ""
-        private const val TEXT =
-            "Richard (red) Of (orange) York (yellow) Gave (green) Battle (blue) In (indigo) Vain (violet)"
 
         private var grade = 0
         private var totalTests = 0
@@ -353,11 +311,6 @@ class InstrumentedTestLab23 {
             arrayOf("red", "orange", "yellow", "green", "azure", "blue", "violet")
         private var colorsCorrectValues =
             arrayOf(0xFF0000, 0xF6A630, 0xFFEB3B, 0x00ff00, 0x2196F3, 0x0000ff, 0x673AB7)
-
-        @JvmStatic
-        fun withFontSize(fontSize: Float): Matcher<View?>? {
-            return FontSizeMatcher(fontSize)
-        }
 
         @BeforeClass
         @JvmStatic
