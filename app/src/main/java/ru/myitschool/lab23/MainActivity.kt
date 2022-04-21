@@ -1,5 +1,11 @@
 package ru.myitschool.lab23
 
+import android.R.attr.label
+import android.R.attr.layout_height
+import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
@@ -10,6 +16,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.marginTop
 import ru.myitschool.lab23.databinding.ActivityMainBinding
 
 
@@ -18,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var mInputHelper: TextInputHelper
 
+    @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -32,10 +40,12 @@ class MainActivity : AppCompatActivity() {
             text = "Hello"
         })*/
 
+
+
         for (i in 1..5) {
             binding.container.outerLayout.addView(
                 LinearLayout(this).apply {
-                    setBackgroundColor(getColor(R.color.white))
+                    //setBackgroundColor(getColor(R.color.white))
                     layoutParams = LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
@@ -43,13 +53,15 @@ class MainActivity : AppCompatActivity() {
                     orientation = LinearLayout.HORIZONTAL
                     addView(
                         TextView(context).apply {
-                            setBackgroundColor(getColor(R.color.white))
+                            id = 100 * i
+                            //setBackgroundColor(getColor(R.color.white))
                             layoutParams = LinearLayout.LayoutParams(
                                 ViewGroup.LayoutParams.WRAP_CONTENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT
                             )
                             text = "$i LongTextHere"
                             setTextColor(Color.GREEN)
+
                         }
                     )
                     addView(
@@ -60,8 +72,7 @@ class MainActivity : AppCompatActivity() {
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT
                             )
-                            hint = "$i LongTextHere $id"
-                            setTextColor(Color.GREEN)
+                            hint = "$i T$id"
                             inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL
                         }
                     )
@@ -69,6 +80,15 @@ class MainActivity : AppCompatActivity() {
 
             )
         }
+
+        findViewById<TextView>(100).setOnClickListener {
+            val clipboard: ClipboardManager =
+                getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("some label", "textt")
+            clipboard.setPrimaryClip(clip)
+        }
+
+        // findViewById<TextView>(1).setHint("New")
 
         /*val km = binding.container.km
         val m = binding.container.m

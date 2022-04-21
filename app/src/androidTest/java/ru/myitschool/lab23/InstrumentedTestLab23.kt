@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
@@ -13,6 +14,7 @@ import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.FailureHandler
 import androidx.test.espresso.accessibility.AccessibilityChecks
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.PositionAssertions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.base.DefaultFailureHandler
@@ -22,9 +24,12 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultBaseUtils.matchesCheckNames
+import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.Description
 import org.hamcrest.Matcher
+import org.hamcrest.Matchers
 import org.hamcrest.TypeSafeMatcher
 import org.junit.*
 import org.junit.runner.RunWith
@@ -96,7 +101,29 @@ class InstrumentedTestLab23 {
     fun interfaceTest() {
         //Check existence of views
         addTestToStat(1)
+        Thread.sleep(5_000)
+
+
+
+        //todo with tags
+        //onView(withTa)
+        onView(withText("1 LongTextHere")).perform(click())
+        onView(withTagValue(`is`("km")))
+        onView(withHint("1 T1")).perform(click())
+        UiDevice
+            .getInstance(InstrumentationRegistry.getInstrumentation())
+            .pressKeyCode(KeyEvent.KEYCODE_V, KeyEvent.META_CTRL_MASK)
+        onView(withText("textt")).check(matches(isDisplayed()))
+
+
+
         Thread.sleep(10_000)
+
+
+
+
+
+
         checkInterface(
             intArrayOf(mainTextId)
         )
@@ -324,6 +351,8 @@ class InstrumentedTestLab23 {
                 .setThrowExceptionFor(AccessibilityCheckResultType.WARNING)
                 .setThrowExceptionFor(AccessibilityCheckResultType.ERROR)
                 .setThrowExceptionFor(AccessibilityCheckResultType.INFO)
+                .setSuppressingResultMatcher(matchesCheckNames(`is`
+                    ("TouchTargetSizeCheck")))
         }
 
         @AfterClass
@@ -355,7 +384,7 @@ class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandl
             val newError = Throwable(
                 extraMessage + "     " + error.message?.substring(
                     0,
-                    min(530, error.message?.length ?: 0)
+                    min(1000, error.message?.length ?: 0)
                 ) + "...", error.cause
             )
 
