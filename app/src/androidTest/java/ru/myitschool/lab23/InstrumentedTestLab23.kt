@@ -69,6 +69,7 @@ class InstrumentedTestLab23 {
 
 
         val intent = Intent(appContext, MainActivity::class.java)
+        intent.putExtra("param", "TestString")
         activityScenario = ActivityScenario.launch(intent)
 
         mainTextId = appContext.resources
@@ -95,9 +96,12 @@ class InstrumentedTestLab23 {
     fun interfaceTest() {
         //Check existence of views
         addTestToStat(1)
+        Thread.sleep(10_000)
         checkInterface(
             intArrayOf(mainTextId)
         )
+
+
 
         onView(
             allOf(
