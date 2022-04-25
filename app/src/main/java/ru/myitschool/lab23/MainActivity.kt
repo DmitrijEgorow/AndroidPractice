@@ -1,8 +1,6 @@
 package ru.myitschool.lab23
 
-import android.R.attr.label
-import android.R.attr.layout_height
-import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -11,12 +9,12 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.marginTop
 import ru.myitschool.lab23.databinding.ActivityMainBinding
 
 
@@ -25,7 +23,67 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var mInputHelper: TextInputHelper
 
-    @SuppressLint("ResourceType")
+    private var lower = 0
+    private var upper = 0
+
+    private val editTextTags = arrayOf(
+        "et_inch",
+        "et_yard",
+        "et_foot",
+        "et_mile",
+        "et_yottametre",
+        "et_zettametre",
+        "et_exametre",
+        "et_petametre",
+        "et_terametre",
+        "et_gigametre",
+        "et_megametre",
+        "et_kilometre",
+        "et_hectometre",
+        "et_decametre",
+        "et_metre",
+        "et_decimetre",
+        "et_centimetre",
+        "et_millimetre",
+        "et_micrometre",
+        "et_nanometre",
+        "et_picometre",
+        "et_femtometre",
+        "et_attometre",
+        "et_zeptometre",
+        "et_yoctometre"
+    )
+    private val editTextView = arrayOf<EditText?>(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+    )
+
+    private lateinit var textViewContents: Array<String>
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -40,9 +98,35 @@ class MainActivity : AppCompatActivity() {
             text = "Hello"
         })*/
 
+        textViewContents = resources.getStringArray(R.array.text_view_captions)
+        Log.d("Tests", textViewContents.toList().map { v -> "\"$v\"" }.toString())
+
+        lower =
+            if (intent.extras?.get("lower") != null) intent.extras?.get("lower") as Int else 0
+        upper =
+            if (intent.extras?.get("upper") != null) intent.extras?.get("upper") as Int else
+                textViewContents.size - 1
+
+        mInputHelper = TextInputHelper(context = this, lower, upper)
 
 
-        for (i in 1..5) {
+
+
+        for (i in lower..upper) {
+            val mEditText = EditText(this).apply {
+                id = 300 * i + 1
+                tag = "${editTextTags[i]}"
+                // setBackgroundColor(getColor(R.color.white))
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                hint = "$i T$id"
+                inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL
+                textSize = 12F
+                addTextChangedListener(mInputHelper)
+            }
+            editTextView[i] = mEditText
             binding.container.outerLayout.addView(
                 LinearLayout(this).apply {
                     //setBackgroundColor(getColor(R.color.white))
@@ -53,40 +137,39 @@ class MainActivity : AppCompatActivity() {
                     orientation = LinearLayout.HORIZONTAL
                     addView(
                         TextView(context).apply {
-                            id = 100 * i
+                            id = 100 * i + 1
                             //setBackgroundColor(getColor(R.color.white))
                             layoutParams = LinearLayout.LayoutParams(
                                 ViewGroup.LayoutParams.WRAP_CONTENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT
                             )
-                            text = "$i LongTextHere"
+                            text = "${textViewContents[i]}"
                             setTextColor(Color.GREEN)
-
+                            setOnClickListener {
+                                val clipboard: ClipboardManager =
+                                    getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                val clip = ClipData.newPlainText("some label", "textt")
+                                clipboard.setPrimaryClip(clip)
+                            }
+                            textSize = 12F
                         }
                     )
                     addView(
-                        EditText(context).apply {
-                            id = i
-                            setBackgroundColor(getColor(R.color.white))
-                            layoutParams = LinearLayout.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            )
-                            hint = "$i T$id"
-                            inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL
-                        }
+                        mEditText
                     )
                 }
 
             )
         }
 
-        findViewById<TextView>(100).setOnClickListener {
+        mInputHelper.addViewTags(editTextView)
+
+        /*findViewById<TextView>(100).setOnClickListener {
             val clipboard: ClipboardManager =
                 getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText("some label", "textt")
             clipboard.setPrimaryClip(clip)
-        }
+        }*/
 
         // findViewById<TextView>(1).setHint("New")
 
@@ -101,7 +184,7 @@ class MainActivity : AppCompatActivity() {
         km.hint = str
         m.hint = "$str!"*/
 
-        mInputHelper = TextInputHelper()
+
         // One or more EditTexts can be added, and TextView can be added, of course.
         //mInputHelper.addViews(km, m, dm, sm, mm, inches)
 
@@ -139,31 +222,121 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+    // https://freakycoder.com/android-notes-66-how-to-use-textwatcher-for-more-than-one-edittext-e190b7ae1070
+    class TextInputHelper(context: Activity, private var lower: Int, private var upper: Int) : TextWatcher {
+        private var mViewSet: ArrayList<TextView>? = null
+        private val converterArray = doubleArrayOf(
+            39.37007874015748031,
+            1.093613298337707787,
+            3.280839895013123360,
+            0.000621371192237330,
+            1e-10,
+            1e-9,
+            1e-8,
+            1e-7,
+            1e-6,
+            1e-5,
+            1e-4,
+            1e-3,
+            1e-2,
+            1e-1,
+            1.0,
+            10.0,
+            100.0,
+            1000.0,
+            10000.0,
+            100000.0,
+            1000000.0,
+            10000000.0,
+            100000000.0,
+            1000000000.0,
+            10000000000.0
+        )
+        private var context: Activity? = context
+
+        private var tagsArray = arrayOf<EditText?>()
+
+        fun addViews(vararg views: TextView) {
+            if (mViewSet == null) {
+                mViewSet = ArrayList<TextView>(views.size - 1)
+            }
+            for (view in views) {
+                view.addTextChangedListener(this)
+                mViewSet?.add(view)
+            }
+            //afterTextChanged(null)
+        }
+
+        fun addViewTags(arr: Array<EditText?>) {
+            tagsArray = arr.clone()
+        }
+
+        override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            //TODO("Not yet implemented")
+        }
+
+        override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            //TODO("Not yet implemented")
+        }
+
+        override fun afterTextChanged(editable: Editable?) {
+            //TODO("Not yet implemented")
+
+            if (editable != null && !editable.toString().equals("")) {
+                // Checking editable.hashCode() to understand which edittext is using right now
+                // Log.d("Tests", editable.toString())
+                for (i in lower..upper) {
+
+                    val v = tagsArray[i]// context?.findViewById<TextView>(300 * i + 1)
+                    if (v != null) {
+                        val txt : String = v.text.toString()
+                        // Log.d("Tests", "${editable.toString()}@${txt}@")
+                        // val r = txt.equals(editable.toString())
+                        if (txt.hashCode() == editable.toString().hashCode()) {
+                            val value: Double = try {
+                                editable.toString().toDouble()
+                            } catch (e: NumberFormatException) {
+                                0.0
+                            }
+                            Log.d("Tests", "$value")
+                            for (j in lower..upper) {
+                                if (j != i) {
+                                    val v1 = tagsArray[j] // context?.findViewById<TextView>(j)
+                                    if (v1 != null) {
+                                        v1.removeTextChangedListener(this)
+                                        v1.setText("${value * converterArray[j]}")
+                                        // v1.text = "${value * converterArray[j]}"
+                                        v1.addTextChangedListener(this)
+                                    }
+                                }
+
+                            }
+                            /* v.removeTextChangedListener(this)
+                             v.setText(value)
+                             v.addTextChangedListener(this)*/
+                            break
+                        }
+                    }
+                }
+
+
+                /*if (editText.editText!!.text.hashCode() === editable.hashCode()) {
+                    // This is just an example, your magic will be here!
+                    val value = editable.toString()
+                    editText.editText!!.removeTextChangedListener(this)
+                    editText.editText!!.setText(value)
+                    editText.editText!!.addTextChangedListener(this)
+                }*/
+            }/* else if (editText2.editText!!.text.hashCode() === editable!!.hashCode()) {
+            // This is just an example, your magic will be here!
+            val value = editable!!.toString()
+            *//*editText2.editText!!.removeTextChangedListener(this)
+            editText2.editText!!.setText(value)
+            editText2.editText!!.addTextChangedListener(this)*//*
+        }*/
+
+        }
+    }
 }
 
-class TextInputHelper : TextWatcher {
-    private var mViewSet: ArrayList<TextView>? = null
-    private val converterArray = doubleArrayOf(1000.0, 100.0, 10.0, 1.0, 0.1, 39.3700787)
-    fun addViews(vararg views: TextView) {
-        if (mViewSet == null) {
-            mViewSet = ArrayList<TextView>(views.size - 1)
-        }
-        for (view in views) {
-            view.addTextChangedListener(this)
-            mViewSet?.add(view)
-        }
-        afterTextChanged(null)
-    }
-
-    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-        //TODO("Not yet implemented")
-    }
-
-    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-        //TODO("Not yet implemented")
-    }
-
-    override fun afterTextChanged(p0: Editable?) {
-        //TODO("Not yet implemented")
-    }
-}

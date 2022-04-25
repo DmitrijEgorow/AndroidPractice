@@ -15,7 +15,6 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.FailureHandler
 import androidx.test.espresso.accessibility.AccessibilityChecks
 import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.assertion.PositionAssertions.*
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.base.DefaultFailureHandler
 import androidx.test.espresso.matcher.ViewMatchers.*
@@ -26,10 +25,8 @@ import androidx.test.uiautomator.UiDevice
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultBaseUtils.matchesCheckNames
 import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.Description
 import org.hamcrest.Matcher
-import org.hamcrest.Matchers
 import org.hamcrest.TypeSafeMatcher
 import org.junit.*
 import org.junit.runner.RunWith
@@ -74,7 +71,16 @@ class InstrumentedTestLab23 {
 
 
         val intent = Intent(appContext, MainActivity::class.java)
+        val lowerBound = random.nextInt(15)
+        val interval = random.nextInt(21 - 9) + 9
+        val upperBound = min(24, lowerBound + interval)
+
         intent.putExtra("param", "TestString")
+        intent.putExtra("lower", lowerBound)
+        intent.putExtra("upper", upperBound)
+        lowerB = lowerBound
+        upperB = upperBound
+        Log.d("Tests", "${lowerBound} ${upperBound}")
         activityScenario = ActivityScenario.launch(intent)
 
         mainTextId = appContext.resources
@@ -82,11 +88,6 @@ class InstrumentedTestLab23 {
         outerLayoutId = appContext.resources
             .getIdentifier("outer_layout", "id", appContext.opPackageName)
 
-
-        for ((i, e) in colors.withIndex()) {
-            rainbowIds[i] = appContext.resources
-                .getIdentifier(e, "id", appContext.opPackageName)
-        }
     }
 
     private fun checkInterface(ids: IntArray) {
@@ -104,51 +105,19 @@ class InstrumentedTestLab23 {
         Thread.sleep(5_000)
 
 
-
         //todo with tags
         //onView(withTa)
-        onView(withText("1 LongTextHere")).perform(click())
-        onView(withTagValue(`is`("km")))
-        onView(withHint("1 T1")).perform(click())
+        onView(withText("Метр")).perform(click())
+        // onView(withTagValue(`is`("km")))
+        onView(withTagValue(`is`("et_metre"))).perform(click())
         UiDevice
             .getInstance(InstrumentationRegistry.getInstrumentation())
             .pressKeyCode(KeyEvent.KEYCODE_V, KeyEvent.META_CTRL_MASK)
         onView(withText("textt")).check(matches(isDisplayed()))
 
 
-
         Thread.sleep(10_000)
 
-
-
-
-
-
-        checkInterface(
-            intArrayOf(mainTextId)
-        )
-
-
-
-        onView(
-            allOf(
-                withId(mainTextId),
-                withText(MAIN_TEXT_RUS)
-            )
-        )
-            .check(matches(isDisplayed()))
-
-        rotateDevice(true)
-
-        onView(
-            allOf(
-                withId(mainTextId),
-                withText(MAIN_TEXT_RUS)
-            )
-        )
-            .check(matches(isDisplayed()))
-
-        rotateDevice(false)
 
         addTestToPass(1)
     }
@@ -193,55 +162,16 @@ class InstrumentedTestLab23 {
         Thread.sleep(THREAD_DELAY)
 
 
-        val colorResIds = arrayOf(0, 0, 0, 0, 0, 0, 0)
-        for ((i, e) in colors.withIndex()) {
-            colorResIds[i] = appContext.resources
-                .getIdentifier(e, "colors", appContext.opPackageName)
-        }
-        if (colorResIds.reduce(Int::times) != 0) {
-            for ((i, e) in colors.withIndex()) {
-                Assert.assertEquals(
-                    "Mismatch exception: $e as a color does not match the one in the task",
-                    appContext.getColor(colorResIds[i]),
-                    colorsCorrectValues[i]
-                )
-            }
-        }
-
-
         addTestToPass(1)
     }
 
     @Test
     fun checkResPortait() {
         addTestToStat(2)
-
-        checkInterface(
-            rainbowIds
-        )
         checkInterface(
             intArrayOf(mainTextId)
         )
 
-        for ((i, e) in colors.withIndex()) {
-            onView(withId(rainbowIds[i]))
-                .check(matches(isDisplayed()))
-            if (i + 1 < colors.size) {
-                onView(withId(rainbowIds[i + 1]))
-                    .check(
-                        isCompletelyBelow(
-                            withId(rainbowIds[i])
-                        )
-                    )
-            }
-        }
-
-        onView(withId(mainTextId))
-            .check(
-                isCompletelyAbove(
-                    withId(rainbowIds[0])
-                )
-            )
 
 
         addTestToPass(2)
@@ -253,35 +183,11 @@ class InstrumentedTestLab23 {
         //Check string resource
         addTestToStat(3)
 
-        checkInterface(
-            rainbowIds
-        )
+
         checkInterface(
             intArrayOf(mainTextId)
         )
 
-        rotateDevice(true)
-        Thread.sleep(THREAD_DELAY)
-
-        for ((i, e) in colors.withIndex()) {
-            onView(withId(rainbowIds[i]))
-                .check(matches(isDisplayed()))
-            if (i + 1 < colors.size) {
-                onView(withId(rainbowIds[i + 1]))
-                    .check(
-                        isCompletelyRightOf(
-                            withId(rainbowIds[i])
-                        )
-                    )
-            }
-        }
-
-        onView(withId(mainTextId))
-            .check(
-                isCompletelyAbove(
-                    withId(rainbowIds[0])
-                )
-            )
 
         handler?.extraMessage = "Does outer_layout contain all coloured views?"
         onView(withId(outerLayoutId))
@@ -322,7 +228,6 @@ class InstrumentedTestLab23 {
     companion object {
         private const val APP_NAME = "Lab23"
         private const val THREAD_DELAY: Long = 300
-        private const val MAIN_TEXT_RUS = "Каждый Охотник Желает Знать Где Сидит Фазан"
         private const val MAIN_TEXT_ENG = "Richard Of York Gave Battle In Vain"
         private const val EMPTY_STRING = ""
 
@@ -333,15 +238,64 @@ class InstrumentedTestLab23 {
 
         private var mainTextId = 0
         private var outerLayoutId = 0
-        private var buttonSendId = 0
-        private var loginId = 0
-        private var yearId = 0
-        private var twitterId = 0
-        private var rainbowIds = intArrayOf(0, 0, 0, 0, 0, 0, 0)
-        private var colors =
-            arrayOf("red", "orange", "yellow", "green", "azure", "blue", "violet")
-        private var colorsCorrectValues =
-            arrayOf(0xFF0000, 0xF6A630, 0xFFEB3B, 0x00ff00, 0x2196F3, 0x0000ff, 0x673AB7)
+
+        private var lowerB = 0
+        private var upperB = 25
+        private var textViewContents =
+            arrayOf(
+                "Дюйм",
+                "Ярд",
+                "Фут",
+                "Миля",
+                "Иоттаметр",
+                "Зеттаметр",
+                "Эксаметр",
+                "Петаметр",
+                "Тераметр",
+                "Гигаметр",
+                "Мегаметр",
+                "Километр",
+                "Гектометр",
+                "Декаметр",
+                "Метр",
+                "Дециметр",
+                "Сантиметр",
+                "Миллиметр",
+                "Микрометр",
+                "Нанометр",
+                "Пикометр",
+                "Фемтометр",
+                "Аттометр",
+                "Зептометр",
+                "Иоктометр"
+            )
+        private val converterArray = doubleArrayOf(
+            39.37007874015748031,
+            1.093613298337707787,
+            3.280839895013123360,
+            0.000621371192237330,
+            1e-10,
+            1e-9,
+            1e-8,
+            1e-7,
+            1e-6,
+            1e-5,
+            1e-4,
+            1e-3,
+            1e-2,
+            1e-1,
+            1.0,
+            10.0,
+            100.0,
+            1000.0,
+            10000.0,
+            100000.0,
+            1000000.0,
+            10000000.0,
+            100000000.0,
+            1000000000.0,
+            10000000000.0
+        )
 
         @BeforeClass
         @JvmStatic
@@ -351,8 +305,12 @@ class InstrumentedTestLab23 {
                 .setThrowExceptionFor(AccessibilityCheckResultType.WARNING)
                 .setThrowExceptionFor(AccessibilityCheckResultType.ERROR)
                 .setThrowExceptionFor(AccessibilityCheckResultType.INFO)
-                .setSuppressingResultMatcher(matchesCheckNames(`is`
-                    ("TouchTargetSizeCheck")))
+                .setSuppressingResultMatcher(
+                    matchesCheckNames(
+                        `is`
+                            ("TouchTargetSizeCheck")
+                    )
+                )
         }
 
         @AfterClass
@@ -391,24 +349,5 @@ class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandl
             // Then delegate the error handling to the default handler which will throw an exception
             delegate.handle(newError, viewMatcher)
         }
-    }
-}
-
-
-class FontSizeMatcher(private val expectedSize: Float) : TypeSafeMatcher<View?>(
-    View::class.java
-) {
-
-    override fun describeTo(description: Description) {
-        description.appendText("with fontSize: ")
-        description.appendValue(expectedSize)
-    }
-
-    override fun matchesSafely(target: View?): Boolean {
-        if (target !is TextView) {
-            return false
-        }
-        val targetEditText: TextView = target
-        return kotlin.math.abs(targetEditText.textSize - expectedSize) < 1e-5
     }
 }
