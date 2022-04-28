@@ -15,7 +15,10 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.marginEnd
 import ru.myitschool.lab23.databinding.ActivityMainBinding
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 
 class MainActivity : AppCompatActivity() {
@@ -90,14 +93,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        /*binding.container.root.addView(Button(this).apply {
-            setBackgroundColor(getColor(R.color.white))
-            layoutParams = ViewGroup.LayoutParams(200, 200)
-                //ViewGroup.LayoutParams.MATCH_PARENT,
-                //ViewGroup.LayoutParams.WRAP_CONTENT)
-            text = "Hello"
-        })*/
-
         textViewContents = resources.getStringArray(R.array.text_view_captions)
         Log.d("Tests", textViewContents.toList().map { v -> "\"$v\"" }.toString())
 
@@ -110,8 +105,6 @@ class MainActivity : AppCompatActivity() {
         mInputHelper = TextInputHelper(context = this, lower, upper)
 
 
-
-
         for (i in lower..upper) {
             val mEditText = EditText(this).apply {
                 id = 300 * i + 1
@@ -121,8 +114,8 @@ class MainActivity : AppCompatActivity() {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
-                hint = "$i T$id"
-                inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL
+                hint = "${mInputHelper.converterArray[i]} ${textViewContents[i]}"
+                inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_CLASS_NUMBER
                 textSize = 12F
                 addTextChangedListener(mInputHelper)
             }
@@ -135,6 +128,7 @@ class MainActivity : AppCompatActivity() {
                         ViewGroup.LayoutParams.WRAP_CONTENT
                     )
                     orientation = LinearLayout.HORIZONTAL
+                    setPadding(32, 0, 32, 0)
                     addView(
                         TextView(context).apply {
                             id = 100 * i + 1
@@ -143,12 +137,17 @@ class MainActivity : AppCompatActivity() {
                                 ViewGroup.LayoutParams.WRAP_CONTENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT
                             )
-                            text = "${textViewContents[i]}"
+                            setPadding(0, 0, 32, 0)
+                            text = textViewContents[i]
                             setTextColor(Color.GREEN)
                             setOnClickListener {
                                 val clipboard: ClipboardManager =
                                     getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                val clip = ClipData.newPlainText("some label", "textt")
+
+                                val clip = ClipData.newPlainText(
+                                    "some label",
+                                    editTextView[i]?.text.toString()
+                                )
                                 clipboard.setPrimaryClip(clip)
                             }
                             textSize = 12F
@@ -224,9 +223,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     // https://freakycoder.com/android-notes-66-how-to-use-textwatcher-for-more-than-one-edittext-e190b7ae1070
-    class TextInputHelper(context: Activity, private var lower: Int, private var upper: Int) : TextWatcher {
+    class TextInputHelper(context: Activity, private var lower: Int, private var upper: Int) :
+        TextWatcher {
         private var mViewSet: ArrayList<TextView>? = null
-        private val converterArray = doubleArrayOf(
+        internal val converterArray = doubleArrayOf(
             39.37007874015748031,
             1.093613298337707787,
             3.280839895013123360,
@@ -290,14 +290,18 @@ class MainActivity : AppCompatActivity() {
 
                     val v = tagsArray[i]// context?.findViewById<TextView>(300 * i + 1)
                     if (v != null) {
-                        val txt : String = v.text.toString()
+                        val txt: String = v.text.toString()
                         // Log.d("Tests", "${editable.toString()}@${txt}@")
                         // val r = txt.equals(editable.toString())
                         if (txt.hashCode() == editable.toString().hashCode()) {
-                            val value: Double = try {
-                                editable.toString().toDouble()
+                            val value: BigDecimal = try {
+                                BigDecimal(editable.toString())
+                                    .divide(BigDecimal(converterArray[i]),
+                                    8, RoundingMode.HALF_UP)
+                                    .add(BigDecimal(1e-8))
+                                // editable.toString().toDouble() / converterArray[i]
                             } catch (e: NumberFormatException) {
-                                0.0
+                                BigDecimal.ZERO
                             }
                             Log.d("Tests", "$value")
                             for (j in lower..upper) {
@@ -305,21 +309,21 @@ class MainActivity : AppCompatActivity() {
                                     val v1 = tagsArray[j] // context?.findViewById<TextView>(j)
                                     if (v1 != null) {
                                         v1.removeTextChangedListener(this)
-                                        v1.setText("${value * converterArray[j]}")
-                                        // v1.text = "${value * converterArray[j]}"
+                                        // v1.setText("${value * converterArray[j]}")
+                                        v1.setText(
+                                            "${
+                                                value
+                                                    .multiply(BigDecimal(converterArray[j]))
+                                            }"
+                                        )
                                         v1.addTextChangedListener(this)
                                     }
                                 }
-
                             }
-                            /* v.removeTextChangedListener(this)
-                             v.setText(value)
-                             v.addTextChangedListener(this)*/
                             break
                         }
                     }
                 }
-
 
                 /*if (editText.editText!!.text.hashCode() === editable.hashCode()) {
                     // This is just an example, your magic will be here!
@@ -335,7 +339,6 @@ class MainActivity : AppCompatActivity() {
             editText2.editText!!.setText(value)
             editText2.editText!!.addTextChangedListener(this)*//*
         }*/
-
         }
     }
 }
