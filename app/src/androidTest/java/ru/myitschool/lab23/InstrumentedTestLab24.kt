@@ -14,17 +14,17 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.FailureHandler
 import androidx.test.espresso.accessibility.AccessibilityChecks
 import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.base.DefaultFailureHandler
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
+import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult.AccessibilityCheckResultType
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultBaseUtils.matchesCheckNames
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.allOf
+import org.hamcrest.CoreMatchers.*
 import org.hamcrest.Matcher
 import org.junit.*
 import org.junit.Assert.assertEquals
@@ -41,7 +41,7 @@ import kotlin.math.min
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@LargeTest
+@MediumTest
 class InstrumentedTestLab24 {
     //add/remove seed
     private val random = Random()
@@ -77,7 +77,7 @@ class InstrumentedTestLab24 {
 
         val intent = Intent(appContext, MainActivity::class.java)
         val lowerBound = random.nextInt(15)
-        val interval = random.nextInt(21 - 15) + 15
+        val interval = random.nextInt(25 - 15) + 15
         val upperBound = min(24, lowerBound + interval)
 
         intent.putExtra("param", "TestString")
@@ -279,7 +279,21 @@ class InstrumentedTestLab24 {
                 }
 
         }
-        // Thread.sleep(10_000)
+
+        for (i in 0..(lowerB - 1)) {
+            // Thread.sleep(1_000)
+            onView(withTagValue(`is`(editTextTags[i])))
+                .check(doesNotExist());
+
+            onView(withText(textViewContents[i])).check(doesNotExist());
+        }
+
+        for (i in (upperB + 1)..24) {
+            // Thread.sleep(1_000)
+            onView(withTagValue(`is`(editTextTags[i])))
+                .check(doesNotExist());
+            onView(withText(textViewContents[i])).check(doesNotExist());
+        }
 
 
         addTestToPass(2)
