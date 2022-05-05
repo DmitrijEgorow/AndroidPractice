@@ -1,32 +1,15 @@
 <resources>
-    <string name="app_name" translatable="false">Lab23</string>
+    <string name="app_name">Прямоугольный параллелепипед</string>
+    <string name="caption_text">Стороны прямоугольного параллелепипеда</string>
+    <string name="side_a_text">a =</string>
+    <string name="side_b_text">b =</string>
+    <string name="side_c_text">c =</string>
+    <string name="get_solution_text">Найти</string>
 
-    <string-array name="text_view_captions">
-        <item>Дюйм</item>
-        <item>Ярд</item>
-        <item>Фут</item>
-        <item>Миля</item>
-        <item>Иоттаметр</item>
-        <item>Зеттаметр</item>
-        <item>Эксаметр</item>
-        <item>Петаметр</item>
-        <item>Тераметр</item>
-        <item>Гигаметр</item>
-        <item>Мегаметр</item>
-        <item>Километр</item>
-        <item>Гектометр</item>
-        <item>Декаметр</item>
-        <item>Метр</item>
-        <item>Дециметр</item>
-        <item>Сантиметр</item>
-        <item>Миллиметр</item>
-        <item>Микрометр</item>
-        <item>Нанометр</item>
-        <item>Пикометр</item>
-        <item>Фемтометр</item>
-        <item>Аттометр</item>
-        <item>Зептометр</item>
-        <item>Иоктометр</item>
+    <string-array name="array">
+        <item name="sum">Сумма длин ребер</item>
+        <item name="sum">Длина диагонали</item>
+        <item name="pp">Площадь поверхности</item>
+        <item name="volume">Объем</item>
     </string-array>
-
 </resources>

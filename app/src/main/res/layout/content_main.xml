@@ -1,132 +1,106 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/outer_layout"
+    android:padding="24dp"
     tools:context=".MainActivity">
 
-    <!--<LinearLayout
+    <TextView
+        android:id="@+id/caption"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:text="@string/caption_text"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="146dp" />
 
-        <EditText
-            android:id="@+id/km"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="в км"
-            android:inputType="numberDecimal" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="4"
-            android:text=" " />
-    </LinearLayout>
-
-    <LinearLayout
+    <TextView
+        android:id="@+id/side_a_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:text="@string/side_a_text"
+        app:layout_constraintBottom_toBottomOf="@+id/side_a"
+        app:layout_constraintEnd_toStartOf="@+id/side_a"
+        app:layout_constraintTop_toBottomOf="@+id/caption" />
 
-        <EditText
-            android:id="@+id/m"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="в м"
-            android:inputType="numberDecimal" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="4"
-            android:text=" " />
-    </LinearLayout>
-
-    <LinearLayout
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/side_a"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:inputType="numberDecimal"
+        app:layout_constraintTop_toBottomOf="@+id/caption"
+        />
 
-        <EditText
-            android:id="@+id/dm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="в дм"
-            android:inputType="numberDecimal" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="4"
-            android:text=" " />
-    </LinearLayout>
-
-    <LinearLayout
+    <TextView
+        android:id="@+id/side_b_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:text="@string/side_b_text"
+        app:layout_constraintBottom_toBottomOf="@+id/side_b"
+        app:layout_constraintEnd_toStartOf="@+id/side_b"
+        app:layout_constraintTop_toBottomOf="@+id/side_a" />
 
-        <EditText
-            android:id="@+id/sm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="в см"
-            android:inputType="numberDecimal" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="4"
-            android:text=" " />
-    </LinearLayout>
-
-    <LinearLayout
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/side_b"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:inputType="numberDecimal"
+        app:layout_constraintTop_toBottomOf="@+id/side_a"
+        />
 
-        <EditText
-            android:id="@+id/mm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="в мм"
-            android:inputType="numberDecimal" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="4"
-            android:text=" " />
-    </LinearLayout>
-
-    <LinearLayout
+    <TextView
+        android:id="@+id/side_c_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:text="@string/side_c_text"
+        app:layout_constraintBottom_toBottomOf="@+id/side_c"
+        app:layout_constraintEnd_toStartOf="@+id/side_c"
+        app:layout_constraintTop_toBottomOf="@+id/side_b" />
 
-        <EditText
-            android:id="@+id/inches"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="в дюймы"
-            android:inputType="numberDecimal" />
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/side_c"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        app:layout_constraintTop_toBottomOf="@+id/side_b"
+         />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="4"
-            android:text=" " />
-    </LinearLayout>-->
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/fab_margin"
+        android:entries="@array/array"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@+id/side_c"
+         />
 
-    <!--<Button
-        android:id="@+id/inspect"
+    <Button
+        android:id="@+id/calculate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="buttonClick"
+        android:layout_marginTop="@dimen/fab_margin"
+        android:text="@string/get_solution_text"
+        app:layout_constraintTop_toBottomOf="@+id/spinner"
+         />
+
+    <TextView
+        android:id="@+id/solution"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text=" " />-->
+        android:layout_marginTop="90dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/calculate" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
 
 
-</LinearLayout>
+
+
+
+
+
+
+
+
