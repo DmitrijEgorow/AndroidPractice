@@ -4,6 +4,9 @@
     <string name="side_a_text">a =</string>
     <string name="side_b_text">b =</string>
     <string name="side_c_text">c =</string>
+    <string name="side_a_hint">    a</string>
+    <string name="side_b_hint">    b</string>
+    <string name="side_c_hint">    c</string>
     <string name="get_solution_text">Найти</string>
 
     <string-array name="array">

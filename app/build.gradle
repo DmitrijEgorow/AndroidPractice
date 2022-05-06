@@ -27,6 +27,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     testOptions {
+        animationsDisabled true
     }
     buildFeatures {
         viewBinding true
@@ -49,6 +50,8 @@ dependencies {
 
     implementation "androidx.navigation:navigation-fragment:$jetpack_version"
     implementation "androidx.navigation:navigation-ui:$jetpack_version"
+
+    androidTestImplementation "io.github.kakaocup:kakao:$kakao_version"
 
     implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     testImplementation 'junit:junit:4.13.2'

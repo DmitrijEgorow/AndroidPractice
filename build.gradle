@@ -4,6 +4,7 @@ buildscript {
     ext.retrofit_version = "2.9.0"
     ext.jetpack_version = "2.4.2"
     ext.volley_version = "1.2.1"
+    ext.kakao_version = "3.0.6"
 
     repositories {
         google()

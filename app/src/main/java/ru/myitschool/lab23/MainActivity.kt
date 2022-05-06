@@ -1,5 +1,8 @@
 package ru.myitschool.lab23
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
@@ -48,6 +51,17 @@ class MainActivity : AppCompatActivity() {
                 }"
             }
 
+        }
+
+        text.setOnClickListener {
+            val clipboard: ClipboardManager =
+                getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+            val clip = ClipData.newPlainText(
+                "some label",
+                text.text.toString()
+            )
+            clipboard.setPrimaryClip(clip)
         }
     }
 }

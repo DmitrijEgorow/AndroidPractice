@@ -25,6 +25,7 @@
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/side_a"
+        android:hint="@string/side_a_hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
@@ -42,6 +43,7 @@
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/side_b"
+        android:hint="@string/side_b_hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
@@ -59,6 +61,7 @@
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/side_c"
+        android:hint="@string/side_c_hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
