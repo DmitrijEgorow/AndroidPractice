@@ -118,7 +118,7 @@ class InstrumentedTestTrickyHexahedron {
     }
 
 
-    @Test
+    @Test(timeout = MAX_TIMEOUT)
     fun lengthCheck() {
         addTestToStat(1)
         addTestToStat(1)
@@ -135,7 +135,7 @@ class InstrumentedTestTrickyHexahedron {
         }
     }
 
-    @Test
+    @Test(timeout = MAX_TIMEOUT)
     fun diagonalCheck() {
         addTestToStat(2)
         addTestToStat(2)
@@ -152,7 +152,7 @@ class InstrumentedTestTrickyHexahedron {
         }
     }
 
-    @Test
+    @Test(timeout = MAX_TIMEOUT)
     fun areaCheck() {
         addTestToStat(1)
         addTestToStat(1)
@@ -169,7 +169,7 @@ class InstrumentedTestTrickyHexahedron {
         }
     }
 
-    @Test
+    @Test(timeout = MAX_TIMEOUT)
     fun volumeCheck() {
         addTestToStat(1)
         addTestToStat(1)
@@ -416,7 +416,7 @@ class InstrumentedTestTrickyHexahedron {
     }
 
 
-    @Test
+    @Test(timeout = MAX_TIMEOUT)
     fun interfaceTest() {
         addTestToStat(1)
 
@@ -449,7 +449,7 @@ class InstrumentedTestTrickyHexahedron {
         addTestToPass(1)
     }
 
-    @Test
+    @Test(timeout = MAX_TIMEOUT)
     fun aStringsTest() {
         //Check existence of views
         addTestToStat(1)
@@ -491,6 +491,7 @@ class InstrumentedTestTrickyHexahedron {
     companion object {
         private const val APP_NAME = "Lab28"
         private const val THREAD_DELAY: Long = 300
+        private const val MAX_TIMEOUT : Long = 15_000
 
         private var grade = 0
         private var totalTests = 0
