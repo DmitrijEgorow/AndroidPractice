@@ -1,68 +1,110 @@
 package ru.myitschool.lab23
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.os.Bundle
-import android.view.View
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.TextView
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.view.View
+import android.widget.*
+import android.widget.MediaController
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
+    private var button: Button? = null
+    private var videoView: VideoView? = null
+    private var videoFilePath = ""
+    var mediaControls: MediaController? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main)
+        button = findViewById(R.id.capture_video)
+        videoView = findViewById(R.id.video_view)
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+            PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_PERMISSION)
+        }
+        button?.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(view: View?) {
+                openVideoIntent()
+            }
+        })
+
+        videoView?.setOnClickListener {
+            videoView?.start()
+        }
     }
 
-    fun buttonClick(v: View) {
-        val sideA: EditText = findViewById(R.id.side_a)
-        val sideB: EditText = findViewById(R.id.side_b)
-        val sideC: EditText = findViewById(R.id.side_c)
-        val text: TextView = findViewById(R.id.solution)
-        var flag = false
-        val spinner: Spinner = findViewById(R.id.spinner)
-        val selectedValue: String = spinner.selectedItem.toString();
 
-        if (!flag) {
-            text.text = when (selectedValue) {
-                "Сумма длин ребер" -> "${
-                    sideA.text.toString().toDouble() * 4 + sideB.text.toString()
-                        .toDouble() * 4 + sideC.text.toString().toDouble() * 4
-                }"
-                "Площадь поверхности" -> "${
-                    2 * ((sideA.text.toString().toDouble() * sideB.text.toString()
-                        .toDouble()) + (sideB.text.toString().toDouble() * sideC.text.toString()
-                        .toDouble()) + (sideA.text.toString().toDouble() * sideC.text.toString()
-                        .toDouble()))
-                }"
-                "Длина диагонали" -> "${
-                    Math.sqrt(
-                        sideA.text.toString().toDouble() * sideA.text.toString().toDouble() +
-                                sideB.text.toString().toDouble() * sideB.text.toString()
-                            .toDouble() +
-                                sideC.text.toString().toDouble() * sideC.text.toString().toDouble()
-                    )
-                }"
-                else -> "${
-                    sideA.text.toString().toDouble() * sideB.text.toString()
-                        .toDouble() * sideC.text.toString().toDouble()
-                }"
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_VIDEO) {
+            if (resultCode == Activity.RESULT_OK) {
+
+                videoView?.setVideoURI(Uri.parse(videoFilePath))
+                videoView?.start()
+
+
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                Toast.makeText(this, "You cancelled the operation", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
 
+    private fun openVideoIntent() {
+        val videoIntent = Intent(MediaStore.ACTION_VIDEO_CAPTURE)
+
+        if (videoIntent.resolveActivity(packageManager) != null) {
+            var videoFile: File? = null
+            videoFile = try {
+                createVideoFile()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                return
+            }
+            val videoUri: Uri = FileProvider.getUriForFile(this, "$packageName.provider", videoFile!!)
+            videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoUri)
+
+            startActivityForResult(videoIntent, REQUEST_VIDEO)
         }
 
-        text.setOnClickListener {
-            val clipboard: ClipboardManager =
-                getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        /*Intent(MediaStore.ACTION_VIDEO_CAPTURE).also { takeVideoIntent ->
+            takeVideoIntent.resolveActivity(packageManager)?.also {
+                startActivityForResult(takeVideoIntent, Companion.REQUEST_VIDEO)
+            }
+        }*/
+    }
 
-            val clip = ClipData.newPlainText(
-                "some label",
-                text.text.toString()
-            )
-            clipboard.setPrimaryClip(clip)
-        }
+    @Throws(IOException::class)
+    private fun createVideoFile(): File {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val imageFileName = "VIDEO_" + timeStamp + "_"
+        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_MOVIES)
+        val video: File = File.createTempFile(imageFileName, ".mp4", storageDir)
+        videoFilePath = video.getAbsolutePath()
+        //Log.d("MAIN_LOG", imageFileName.toString());
+        return video
+    }
+
+
+    companion object {
+        const val REQUEST_VIDEO = 100
+        const val REQUEST_PERMISSION = 200
     }
 }
-
