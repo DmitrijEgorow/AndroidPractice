@@ -1,19 +1,4 @@
 <resources>
-    <string name="app_name">Прямоугольный параллелепипед</string>
-    <string name="caption_text">Стороны прямоугольного параллелепипеда</string>
-    <string name="side_a_text">a =</string>
-    <string name="side_b_text">b =</string>
-    <string name="side_c_text">c =</string>
-    <string name="side_a_hint">    a</string>
-    <string name="side_b_hint">    b</string>
-    <string name="side_c_hint">    c</string>
-    <string name="get_solution_text">Найти</string>
+    <string name="app_name">Video capture</string>
     <string name="get_video">Capture</string>
-
-    <string-array name="array">
-        <item name="sum">Сумма длин ребер</item>
-        <item name="sum">Длина диагонали</item>
-        <item name="pp">Площадь поверхности</item>
-        <item name="volume">Объем</item>
-    </string-array>
 </resources>

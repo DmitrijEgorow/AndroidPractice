@@ -5,13 +5,13 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.view.View
-import android.widget.*
-import android.widget.MediaController
+import android.widget.Button
+import android.widget.Toast
+import android.widget.VideoView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -24,26 +24,23 @@ class MainActivity : AppCompatActivity() {
     private var button: Button? = null
     private var videoView: VideoView? = null
     private var videoFilePath = ""
-    var mediaControls: MediaController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setContentView(R.layout.activity_main)
         button = findViewById(R.id.capture_video)
         videoView = findViewById(R.id.video_view)
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
-            PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                REQUEST_PERMISSION)
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_PERMISSION
+            )
         }
-        button?.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(view: View?) {
-                openVideoIntent()
-            }
-        })
+        button?.setOnClickListener { openVideoIntent() }
 
         videoView?.setOnClickListener {
             videoView?.start()
@@ -78,7 +75,8 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
                 return
             }
-            val videoUri: Uri = FileProvider.getUriForFile(this, "$packageName.provider", videoFile!!)
+            val videoUri: Uri =
+                FileProvider.getUriForFile(this, "$packageName.provider", videoFile!!)
             videoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoUri)
 
             startActivityForResult(videoIntent, REQUEST_VIDEO)
@@ -93,12 +91,12 @@ class MainActivity : AppCompatActivity() {
 
     @Throws(IOException::class)
     private fun createVideoFile(): File {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val timeStamp: String =
+            SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val imageFileName = "VIDEO_" + timeStamp + "_"
         val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_MOVIES)
         val video: File = File.createTempFile(imageFileName, ".mp4", storageDir)
         videoFilePath = video.getAbsolutePath()
-        //Log.d("MAIN_LOG", imageFileName.toString());
         return video
     }
 

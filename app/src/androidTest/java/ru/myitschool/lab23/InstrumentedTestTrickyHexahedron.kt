@@ -4,41 +4,50 @@ import android.app.Activity
 import android.app.Instrumentation
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
-import android.widget.TextView
+import android.widget.VideoView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
+import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.FailureHandler
-import androidx.test.espresso.NoMatchingViewException
-import androidx.test.espresso.ViewAssertion
 import androidx.test.espresso.accessibility.AccessibilityChecks
 import androidx.test.espresso.base.DefaultFailureHandler
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers.anyIntent
+import androidx.test.espresso.screenshot.captureToBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.UiDevice
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultUtils.matchesCheckNames
+import io.github.kakaocup.kakao.common.views.KView
 import io.github.kakaocup.kakao.screen.Screen
 import io.github.kakaocup.kakao.text.KButton
 import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertTrue
 import org.hamcrest.CoreMatchers.anyOf
+import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.Matcher
-import org.junit.*
+import org.junit.AfterClass
+import org.junit.Assert
+import org.junit.Before
+import org.junit.BeforeClass
+import org.junit.FixMethodOrder
+import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import java.math.BigDecimal
-import java.security.SecureRandom
 import java.util.*
+import kotlin.math.abs
 import kotlin.math.min
 import org.hamcrest.CoreMatchers.`is` as iz
+
 
 // https://github.com/microsoft/surface-duo-dual-screen-experience-example/blob/main/app/src/androidTest/java/com/microsoft/device/samples/dualscreenexperience/HiltJUnitRunner.kt
 
@@ -46,14 +55,17 @@ import org.hamcrest.CoreMatchers.`is` as iz
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @LargeTest
 class InstrumentedTestTrickyHexahedron {
-    //add/remove seed
-    private val random = Random()
-    private val securedRandom = SecureRandom()
     private var activityScenario: ActivityScenario<MainActivity>? = null
     private var handler: DescriptionFailureHandler? = null
 
     private lateinit var appContext: Context
     private lateinit var mInstrumentation: Instrumentation
+
+
+    @get:Rule
+    var permissionRule: GrantPermissionRule =
+        GrantPermissionRule.grant(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
 
     @Before
     fun setUp() {
@@ -68,13 +80,13 @@ class InstrumentedTestTrickyHexahedron {
         //configuration.setLayoutDirection(Locale.UK)
         appContext = nonLocalizedContext.createConfigurationContext(configuration)
 
-
         val intent = Intent(appContext, MainActivity::class.java)
         activityScenario = ActivityScenario.launch(intent)
 
-
         buttonId = appContext.resources
             .getIdentifier("capture_video", "id", appContext.opPackageName)
+        videoViewId = appContext.resources
+            .getIdentifier("video_view", "id", appContext.opPackageName)
 
     }
 
@@ -94,21 +106,14 @@ class InstrumentedTestTrickyHexahedron {
 
     @Test(timeout = MAX_TIMEOUT)
     fun lengthCheck() {
-        addTestToStat(1)
-        addTestToStat(1)
+        addTestToStat(2)
 
-        checkInterface(intArrayOf(buttonId))
+        checkInterface(intArrayOf(buttonId, videoViewId))
         Intents.init()
         run {
-
-            //step("Small values") {
             lengthCheckStep()
-            addTestToPass(1)
-            //step("High precision") {
-            //lengthCheckStep()
-            addTestToPass(1)
+            addTestToPass(2)
         }
-
         Intents.release()
     }
 
@@ -116,31 +121,50 @@ class InstrumentedTestTrickyHexahedron {
     private fun lengthCheckStep() {
         class SearchScreen : Screen<SearchScreen>() {
             val startButton = KButton { withId(buttonId) }
+            val videoView = KView { withId(videoViewId) }
         }
 
         val screen = SearchScreen()
         screen {
-            /*Intents.intending(
-                anyIntent()
-            ).respondWithFunction { intent ->
-                Instrumentation.ActivityResult(Activity.RESULT_CANCELED, intent)
-            }*/
-
             Intents.intending(
                 anyIntent()
             ).respondWithFunction { intent ->
                 val ur = intent.getParcelableExtra<Uri>(MediaStore.EXTRA_OUTPUT)
-                Log.d("Tests", ur.toString())
+
+                if (ur != null) {
+                    Log.d("Tests", ur.toString() + "\t" + ur?.path)
+                    val inp = appContext.assets.open("net.mp4")
+                    Log.d("Tests", inp.toString())
+                    appContext.contentResolver.openOutputStream(ur)?.let { inp.copyTo(it) }
+                }
                 Instrumentation.ActivityResult(Activity.RESULT_OK, intent)
             }
 
             startButton.click()
 
-
-            /* Intents.intending(CoreMatchers.not(IntentMatchers.isInternal()))
-                 .respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, null))*/
-
-
+            videoView.click()
+            Thread.sleep(BUFFER_QUEUE_TOLERANCE) // 300
+            Thread.sleep(3_000)
+            val beforeBitmap = onView(
+                instanceOf(VideoView::class.java)
+            ).captureToBitmap()
+            Thread.sleep(3_000)
+            // 6 sec
+            val afterBitmap = onView(
+                instanceOf(VideoView::class.java)
+            ).captureToBitmap()
+            Thread.sleep(3_000)
+            // 9 sec
+            val afterBitmap1 = onView(
+                instanceOf(VideoView::class.java)
+            ).captureToBitmap()
+            Thread.sleep(4_000)
+            // 13 sec
+            val afterBitmapNot = onView(
+                instanceOf(VideoView::class.java)
+            ).captureToBitmap()
+            assertEquals(true, afterBitmap.same(afterBitmap1))
+            assertEquals(false, afterBitmap.same(afterBitmapNot))
 
             /*Intents.intended(
                 anyOf(
@@ -148,39 +172,7 @@ class InstrumentedTestTrickyHexahedron {
                     hasExtra("act", "android.media.action.VIDEO_CAPTURE"),
                 )
             )*/
-
-            Thread.sleep(10_000)
         }
-
-
-    }
-
-    @Test(timeout = MAX_TIMEOUT)
-    fun aStringsTest() {
-        //Check existence of views
-        addTestToStat(1)
-
-        var stringRes = intArrayOf(0, 0, 0)
-
-        stringRes[0] = appContext.resources.getIdentifier(
-            "side_a_text",
-            "string",
-            appContext.opPackageName
-        )
-        stringRes[1] = appContext.resources.getIdentifier(
-            "side_b_text",
-            "string",
-            appContext.opPackageName
-        )
-        stringRes[2] = appContext.resources.getIdentifier(
-            "side_c_text",
-            "string",
-            appContext.opPackageName
-        )
-
-        checkInterface(stringRes, "Do you have required string resources?")
-
-        addTestToPass(1)
     }
 
 
@@ -195,9 +187,10 @@ class InstrumentedTestTrickyHexahedron {
     }
 
     companion object {
-        private const val APP_NAME = "Lab55"
+        private const val APP_NAME = "Lab55Camera"
         private const val THREAD_DELAY: Long = 300
-        private const val MAX_TIMEOUT: Long = 50_000
+        private const val BUFFER_QUEUE_TOLERANCE: Long = 300
+        private const val MAX_TIMEOUT: Long = 25_000
 
         private var grade = 0
         private var totalTests = 0
@@ -205,6 +198,7 @@ class InstrumentedTestTrickyHexahedron {
         private var passTests = 0
 
         private var buttonId = 0
+        private var videoViewId = 0
 
 
         @BeforeClass
@@ -245,37 +239,45 @@ class InstrumentedTestTrickyHexahedron {
     }
 }
 
-class DoubleComparison(
-    private val trueValue: BigDecimal, private
-    val squared: Boolean = false
-) :
-    ViewAssertion {
-    override fun check(view: View?, noViewFoundException: NoMatchingViewException?) {
-        if (noViewFoundException != null) throw noViewFoundException
-        assertTrue(view is TextView)
-        val gotValue = (view as TextView).text.toString().toDouble()
+/**
+ * @param eps shows whether a particular pixel differs in the bitmaps
+ * @param tol checks whether different pixels are prevalent among all
+ */
+private fun Bitmap.same(bitmap: Bitmap, eps: Double = 0.01, tol: Double = 0.89): Boolean {
+    // Different types of image
+    if (this.config !== bitmap.config) return false
+    // Different sizes
+    if (this.width != bitmap.width) return false
 
-        val flag = if (squared) {
-            trueValue
-                .minus(BigDecimal(gotValue * gotValue))
-                .abs()
-                .compareTo(BigDecimal(1e-4))
-        } else {
-            trueValue
-                .minus(BigDecimal(gotValue))
-                .abs()
-                .compareTo(BigDecimal(1e-4))
+    if (this.height != bitmap.height) return false
+
+    val w: Int = this.width
+    val h: Int = this.height
+
+    val argbA = IntArray(w * h)
+    val argbB = IntArray(w * h)
+
+    this.getPixels(argbA, 0, w, 0, 0, w, h)
+    bitmap.getPixels(argbB, 0, w, 0, 0, w, h)
+    var counter = 0
+    if (bitmap.config === Bitmap.Config.ARGB_8888) {
+        val length = w * h
+        for (i in 0 until length) {
+            if (abs(abs(argbA[i] - argbB[i] + 1e-8) / argbB[i]) > eps) {
+                counter++
+            }
         }
-
-        assertEquals(
-            "Wrong number: got $gotValue instead of $trueValue",
-            -1,
-            flag
+        Log.d(
+            "Tests",
+            "$counter $length"
         )
+        if (abs(length - counter + 1e-8) / length < tol) {
+            return false
+        }
+        return true
     }
-
+    return argbA.contentEquals(argbB)
 }
-
 
 class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandler {
     var extraMessage = ""
