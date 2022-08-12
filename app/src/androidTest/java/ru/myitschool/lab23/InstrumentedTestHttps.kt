@@ -1,45 +1,35 @@
 package ru.myitschool.lab23
 
-import android.app.Activity
 import android.app.Instrumentation
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.View
-import android.widget.VideoView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
-import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.FailureHandler
 import androidx.test.espresso.accessibility.AccessibilityChecks
 import androidx.test.espresso.base.DefaultFailureHandler
-import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.intent.matcher.IntentMatchers.anyIntent
-import androidx.test.espresso.screenshot.captureToBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.UiDevice
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResult
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultUtils.matchesCheckNames
-import io.github.kakaocup.kakao.common.views.KView
+import io.github.kakaocup.kakao.edit.KEditText
 import io.github.kakaocup.kakao.screen.Screen
 import io.github.kakaocup.kakao.text.KButton
-import junit.framework.Assert.assertEquals
+import io.github.kakaocup.kakao.text.KTextView
 import org.hamcrest.CoreMatchers.anyOf
-import org.hamcrest.CoreMatchers.instanceOf
 import org.hamcrest.Matcher
 import org.junit.AfterClass
 import org.junit.Assert
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -49,22 +39,25 @@ import kotlin.math.min
 import org.hamcrest.CoreMatchers.`is` as iz
 
 
-// https://github.com/microsoft/surface-duo-dual-screen-experience-example/blob/main/app/src/androidTest/java/com/microsoft/device/samples/dualscreenexperience/HiltJUnitRunner.kt
-
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @LargeTest
 class InstrumentedTestTrickyHexahedron {
+    //add/remove seed
+    private val random = Random()
+
+    private val limit = 2
+
+    private val urlTyped = "https://lab62.com/send"
+    private val queryTyped = "sample"
+    private val resultGot = "Success!"
+
     private var activityScenario: ActivityScenario<MainActivity>? = null
     private var handler: DescriptionFailureHandler? = null
 
+
     private lateinit var appContext: Context
     private lateinit var mInstrumentation: Instrumentation
-
-
-    @get:Rule
-    var permissionRule: GrantPermissionRule =
-        GrantPermissionRule.grant(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
 
     @Before
@@ -73,7 +66,6 @@ class InstrumentedTestTrickyHexahedron {
         handler = DescriptionFailureHandler(mInstrumentation)
         Espresso.setFailureHandler(handler)
 
-
         val nonLocalizedContext = mInstrumentation.targetContext
         val configuration = nonLocalizedContext.resources.configuration
         configuration.setLocale(Locale.UK)
@@ -81,12 +73,18 @@ class InstrumentedTestTrickyHexahedron {
         appContext = nonLocalizedContext.createConfigurationContext(configuration)
 
         val intent = Intent(appContext, MainActivity::class.java)
+
         activityScenario = ActivityScenario.launch(intent)
 
         buttonId = appContext.resources
-            .getIdentifier("capture_video", "id", appContext.opPackageName)
-        videoViewId = appContext.resources
-            .getIdentifier("video_view", "id", appContext.opPackageName)
+            .getIdentifier("send_button", "id", appContext.opPackageName)
+        urlId = appContext.resources
+            .getIdentifier("url_text", "id", appContext.opPackageName)
+        queryId = appContext.resources
+            .getIdentifier("query_parameter", "id", appContext.opPackageName)
+        resultTextId = appContext.resources
+            .getIdentifier("result_text", "id", appContext.opPackageName)
+
 
     }
 
@@ -100,78 +98,55 @@ class InstrumentedTestTrickyHexahedron {
         } else {
             Assert.assertNotEquals(0, id.toLong())
         }
-
     }
 
 
     @Test(timeout = MAX_TIMEOUT)
-    fun lengthCheck() {
+    fun sendRequest() {
         addTestToStat(2)
 
-        checkInterface(intArrayOf(buttonId, videoViewId))
-        Intents.init()
+        checkInterface(intArrayOf(buttonId, urlId, queryId, resultTextId))
         run {
-            lengthCheckStep()
+            sendRequestStep()
+            rotateDevice(true)
+            Thread.sleep(ROTATION_DELAY)
+            rotateDevice(false)
+            Thread.sleep(ROTATION_DELAY)
             addTestToPass(2)
         }
-        Intents.release()
     }
 
 
-    private fun lengthCheckStep() {
+    private fun sendRequestStep() {
         class SearchScreen : Screen<SearchScreen>() {
             val startButton = KButton { withId(buttonId) }
-            val videoView = KView { withId(videoViewId) }
+            val urlText = KEditText { withId(urlId) }
+            val queryView = KEditText { withId(queryId) }
+            val resultText = KTextView { withId(resultTextId) }
         }
 
         val screen = SearchScreen()
         screen {
-            Intents.intending(
-                anyIntent()
-            ).respondWithFunction { intent ->
-                val ur = intent.getParcelableExtra<Uri>(MediaStore.EXTRA_OUTPUT)
 
-                if (ur != null) {
-                    Log.d("Tests", ur.toString() + "\t" + ur?.path)
-                    val inp = appContext.assets.open("net.mp4")
-                    Log.d("Tests", inp.toString())
-                    appContext.contentResolver.openOutputStream(ur)?.let { inp.copyTo(it) }
-                }
-                Instrumentation.ActivityResult(Activity.RESULT_OK, intent)
-            }
-
+            urlText.typeText(urlTyped)
+            queryView.typeText(queryTyped)
             startButton.click()
+            Thread.sleep(THREAD_DELAY)
+            resultText.hasText(resultGot)
 
-            videoView.click()
-            Thread.sleep(BUFFER_QUEUE_TOLERANCE) // 300
-            Thread.sleep(3_000)
-            val beforeBitmap = onView(
-                instanceOf(VideoView::class.java)
-            ).captureToBitmap()
-            Thread.sleep(3_000)
-            // 6 sec
-            val afterBitmap = onView(
-                instanceOf(VideoView::class.java)
-            ).captureToBitmap()
-            Thread.sleep(3_000)
-            // 9 sec
-            val afterBitmap1 = onView(
-                instanceOf(VideoView::class.java)
-            ).captureToBitmap()
-            Thread.sleep(4_000)
-            // 13 sec
-            val afterBitmapNot = onView(
-                instanceOf(VideoView::class.java)
-            ).captureToBitmap()
-            assertEquals(true, afterBitmap.same(afterBitmap1))
-            assertEquals(false, afterBitmap.same(afterBitmapNot))
+        }
+    }
 
-            /*Intents.intended(
-                anyOf(
-                    hasPackage("com.sec.android.app.camera"),
-                    hasExtra("act", "android.media.action.VIDEO_CAPTURE"),
-                )
-            )*/
+    @Throws(InterruptedException::class)
+    private fun rotateDevice(landscapeMode: Boolean) {
+        if (landscapeMode) {
+            activityScenario!!.onActivity { activity ->
+                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            }
+        } else {
+            activityScenario!!.onActivity { activity ->
+                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
         }
     }
 
@@ -187,9 +162,9 @@ class InstrumentedTestTrickyHexahedron {
     }
 
     companion object {
-        private const val APP_NAME = "Lab55Camera"
+        private const val APP_NAME = "Lab62"
         private const val THREAD_DELAY: Long = 300
-        private const val BUFFER_QUEUE_TOLERANCE: Long = 300
+        private const val ROTATION_DELAY: Long = 1_100
         private const val MAX_TIMEOUT: Long = 25_000
 
         private var grade = 0
@@ -198,7 +173,9 @@ class InstrumentedTestTrickyHexahedron {
         private var passTests = 0
 
         private var buttonId = 0
-        private var videoViewId = 0
+        private var urlId = 0
+        private var queryId = 0
+        private var resultTextId = 0
 
 
         @BeforeClass
