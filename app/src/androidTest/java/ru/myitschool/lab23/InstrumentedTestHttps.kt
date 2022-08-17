@@ -4,7 +4,6 @@ import android.app.Instrumentation
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -34,7 +33,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.util.*
-import kotlin.math.abs
 import kotlin.math.min
 import org.hamcrest.CoreMatchers.`is` as iz
 
@@ -42,15 +40,18 @@ import org.hamcrest.CoreMatchers.`is` as iz
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @LargeTest
-class InstrumentedTestTrickyHexahedron {
+class InstrumentedTestHttps {
     //add/remove seed
     private val random = Random()
 
     private val limit = 2
 
-    private val urlTyped = "https://lab62.com/send"
-    private val queryTyped = "sample"
-    private val resultGot = "Success!"
+    private val urlTyped = "https://www.deepl.com/pro-api"
+    private val queryTyped = "header-pro-api"
+    private val resultGot = arrayOf(
+        "DeepL Translate API | Machine Translation Technology",
+        "Everything you need for a language translation in one place."
+    )
 
     private var activityScenario: ActivityScenario<MainActivity>? = null
     private var handler: DescriptionFailureHandler? = null
@@ -116,7 +117,6 @@ class InstrumentedTestTrickyHexahedron {
         }
     }
 
-
     private fun sendRequestStep() {
         class SearchScreen : Screen<SearchScreen>() {
             val startButton = KButton { withId(buttonId) }
@@ -130,9 +130,12 @@ class InstrumentedTestTrickyHexahedron {
 
             urlText.typeText(urlTyped)
             queryView.typeText(queryTyped)
+            closeSoftKeyboard()
             startButton.click()
             Thread.sleep(THREAD_DELAY)
-            resultText.hasText(resultGot)
+            resultText.matches {
+                containsText(resultGot[random.nextInt(resultGot.size)])
+            }
 
         }
     }
@@ -163,7 +166,7 @@ class InstrumentedTestTrickyHexahedron {
 
     companion object {
         private const val APP_NAME = "Lab62"
-        private const val THREAD_DELAY: Long = 300
+        private const val THREAD_DELAY: Long = 2_100
         private const val ROTATION_DELAY: Long = 1_100
         private const val MAX_TIMEOUT: Long = 25_000
 
@@ -214,46 +217,6 @@ class InstrumentedTestTrickyHexahedron {
             Log.d("Tests", grade.toString() + " из " + maxGrade + " баллов получено.")
         }
     }
-}
-
-/**
- * @param eps shows whether a particular pixel differs in the bitmaps
- * @param tol checks whether different pixels are prevalent among all
- */
-private fun Bitmap.same(bitmap: Bitmap, eps: Double = 0.01, tol: Double = 0.89): Boolean {
-    // Different types of image
-    if (this.config !== bitmap.config) return false
-    // Different sizes
-    if (this.width != bitmap.width) return false
-
-    if (this.height != bitmap.height) return false
-
-    val w: Int = this.width
-    val h: Int = this.height
-
-    val argbA = IntArray(w * h)
-    val argbB = IntArray(w * h)
-
-    this.getPixels(argbA, 0, w, 0, 0, w, h)
-    bitmap.getPixels(argbB, 0, w, 0, 0, w, h)
-    var counter = 0
-    if (bitmap.config === Bitmap.Config.ARGB_8888) {
-        val length = w * h
-        for (i in 0 until length) {
-            if (abs(abs(argbA[i] - argbB[i] + 1e-8) / argbB[i]) > eps) {
-                counter++
-            }
-        }
-        Log.d(
-            "Tests",
-            "$counter $length"
-        )
-        if (abs(length - counter + 1e-8) / length < tol) {
-            return false
-        }
-        return true
-    }
-    return argbA.contentEquals(argbB)
 }
 
 class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandler {
