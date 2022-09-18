@@ -348,7 +348,7 @@ class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandl
 
                 extraMessage + "     " + error.message?.substring(
                     0,
-                    min( //todo change length
+                    min(
                         100, error.message?.length ?: 0
                     )
                 ) + "...", error.cause
