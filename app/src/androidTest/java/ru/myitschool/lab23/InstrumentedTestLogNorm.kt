@@ -11,11 +11,16 @@ import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.*
 import androidx.test.espresso.base.DefaultFailureHandler
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasPackage
+import androidx.test.espresso.intent.matcher.IntentMatchers.isInternal
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
+import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import io.github.kakaocup.kakao.edit.KEditText
+import io.github.kakaocup.kakao.recycler.KRecyclerItem
+import io.github.kakaocup.kakao.recycler.KRecyclerView
 import io.github.kakaocup.kakao.screen.Screen
 import io.github.kakaocup.kakao.text.KButton
 import io.github.kakaocup.kakao.text.KTextView
@@ -23,12 +28,15 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.apache.commons.math3.stat.StatUtils
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
+import org.hamcrest.CoreMatchers.anyOf
 import org.hamcrest.Matcher
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import java.security.SecureRandom
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.min
@@ -37,22 +45,22 @@ import kotlin.math.sqrt
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@LargeTest
+@MediumTest
 class InstrumentedTestLogNorm {
     //add/remove seed
     private val random = Random()
     private var outFlag = false
     private var lastNumber = 0.0
 
-    private val limit = 1_500 // 300 for 1m 36s
+    private var limit = 500 // 300 for 1m 36s
     private var index = 0
-    private var mean = 0.0
-    private var variance = 1.0
+    private var k = 1
+    private var lambda = 1.0
 
     private val meanDelta = 1e-1
-    private val varianceDelta = 0.8
-    private val skewnessDelta = 1.1
-    private val kurtosisDelta = 3.1
+    private val varianceDelta = 0.9
+    private val skewnessDelta = 0.9
+    private val kurtosisDelta = 0.9 // 3.1
 
     private var generatedNums = ArrayList<Double>(0)
 
@@ -74,22 +82,28 @@ class InstrumentedTestLogNorm {
         //configuration.setLayoutDirection(Locale.UK)
         appContext = nonLocalizedContext.createConfigurationContext(configuration)
 
-        mean = random.nextDouble()
-        variance = random.nextDouble()
+        limit = SecureRandom().nextInt(limit) + 1
+        k = random.nextInt(10_000)
+        lambda = (SecureRandom().nextDouble() + random.nextDouble() + 1e-3) *
+               (random.nextInt(1000) + 1e-1)
 
 
         val intent = Intent(appContext, MainActivity::class.java)
         //intent.putExtra("long number", inputNumbers[index])
-        Log.d("Tests", "index = $index")
+        Log.d("Tests", "index = $limit $k $lambda")
 
         activityScenario = ActivityScenario.launch(intent)
 
+        sizeId = appContext.resources
+            .getIdentifier("size_param", "id", appContext.opPackageName)
         meanId = appContext.resources
-            .getIdentifier("mean_val", "id", appContext.opPackageName)
+            .getIdentifier("shape_param", "id", appContext.opPackageName)
         varianceId = appContext.resources
-            .getIdentifier("variance_value", "id", appContext.opPackageName)
-        getNumId = appContext.resources
-            .getIdentifier("get_random_num", "id", appContext.opPackageName)
+            .getIdentifier("rate_param", "id", appContext.opPackageName)
+        getRandomNumId = appContext.resources
+            .getIdentifier("get_random_nums", "id", appContext.opPackageName)
+        recyclerViewId = appContext.resources
+            .getIdentifier("generated_list", "id", appContext.opPackageName)
         resultNumId = appContext.resources
             .getIdentifier("random_number_result", "id", appContext.opPackageName)
 
@@ -110,67 +124,106 @@ class InstrumentedTestLogNorm {
 
 
     @Test(timeout = MAX_TIMEOUT)
-    fun authorTest() {
+    fun mainTest() {
         addTestToStat(1)
         checkInterface(
             intArrayOf(
-                meanId, varianceId, resultNumId
-            )
+                sizeId,
+                meanId,
+                varianceId,
+                getRandomNumId)
         )
-        authorCheckStep()
+
+        Intents.init()
+        /*run {
+            mainTestCheckStep()
+            addTestToPass(1)
+        }*/
+        mainTestCheckStep()
         addTestToPass(1)
+        Intents.release()
     }
 
-    private fun authorCheckStep() {
+    private fun mainTestCheckStep() {
+        class Item(parent: Matcher<View>) : KRecyclerItem<Double>(parent) {
+            val name = KTextView(parent) { withId(resultNumId) }
+        }
         class SearchScreen : Screen<SearchScreen>() {
+            val sizeView = KEditText { withId(sizeId) }
             val meanView = KEditText { withId(meanId) }
             val varianceView = KEditText { withId(varianceId) }
-            val getNum = KButton { withId(getNumId) }
-            val resultNum = KTextView { withId(resultNumId) }
+            val getRandomNum = KButton { withId(getRandomNumId) }
+            val recyclerView = KRecyclerView(
+                builder = { withId(recyclerViewId) },
+                itemTypeBuilder = { itemType (::Item) }
+            )
         }
+
+
 
         val screen = SearchScreen()
         screen {
             meanView.clearText()
             varianceView.clearText()
-            meanView.typeText("$mean")
-            varianceView.typeText("$variance")
-            for (i in 0..limit) {
-                getNum.click()
-                Thread.sleep(THREAD_DELAY)
-                resultNum.assert {
-                    DoubleComparison(mean, variance, this@InstrumentedTestLogNorm)
+            sizeView.typeText("$limit")
+            meanView.typeText("$k")
+            varianceView.typeText("$lambda")
+            closeSoftKeyboard()
+            getRandomNum.click()
+
+            Intents.intended(
+                anyOf(
+                    isInternal(),
+                    hasPackage("ru.myitschool.lab23"),
+                )
+            )
+
+            Log.d("Tests", "${recyclerView.getSize()}")
+            assertEquals("List has inappropriate number of elements",
+                limit, recyclerView.getSize())
+            for (i in 0 until limit) {
+                Log.d("Tests", "${i}")
+                recyclerView {
+                    childAt<Item>(i) {
+                        name.assert {
+                            isVisible()
+                            DoubleComparison(k, lambda, this@InstrumentedTestLogNorm)
+                        }
+                    }
                 }
+                /*recyclerView.assert {
+                    DoubleComparison(mean, variance, this@InstrumentedTestLogNorm)
+                }*/
             }
             // checking saving state after rotation
             rotateDevice(true)
-            resultNum.hasText("$lastNumber")
+            // resultNum.hasText("$lastNumber")
             rotateDevice(false)
-            resultNum.hasText("$lastNumber")
+            // resultNum.hasText("$lastNumber")
 
-            checkLogNorm(
-                generatedNums,
-                exp(mean + variance / 2.0),
-                exp(2 * mean + variance) * (exp(variance) - 1),
-                sqrt(exp(variance) - 1) * (exp(variance) + 2),
-                exp(4 * variance) + 2 * exp(3 * variance) + 3 * exp(2 * variance) - 6
+            // Erlang dist
+            checkLogNorm(generatedNums,
+                k / lambda,
+                k / lambda / lambda,
+                2.0 * 1.0 / sqrt(k + 0.0),
+                6.0 / k
             )
         }
     }
 
-    fun addGeneratedNumber(e: Double) {
+    fun addGeneratedNumber(e : Double){
         generatedNums.add(e)
     }
 
-    fun setFlag(flag: Boolean) {
+    fun setFlag(flag : Boolean){
         outFlag = flag
     }
 
-    fun getFlag(): Boolean {
+    fun getFlag(): Boolean{
         return outFlag
     }
 
-    fun setLastNumber(e: Double) {
+    fun setLastNumber(e : Double){
         lastNumber = e
     }
 
@@ -178,22 +231,21 @@ class InstrumentedTestLogNorm {
      * checks mean and std^2 for the whole selection
      * mean and variance
      */
-    fun checkLogNorm(a: ArrayList<Double>, m: Double, v: Double, sk: Double, kur: Double) {
+    fun checkLogNorm(a: ArrayList<Double>, m: Double, v: Double, sk: Double, kur: Double){
         val d = a.toDoubleArray()
         Log.d("Tests", "got = $a")
         val gm = StatUtils.mean(d)
         val gv = StatUtils.variance(d)
         val gskewness = DescriptiveStatistics(d).skewness
         val gkurtosis = DescriptiveStatistics(d).kurtosis
-        Log.d(
-            "Tests",
+        Log.d("Tests",
             "${abs(gm - m)} ${abs(gv - v)} " +
                     "${abs(gskewness - sk)} ${abs(gkurtosis - kur)}"
         )
-        assertEquals("Mean is different", gm, m, meanDelta)
-        assertEquals("Variance is different", gv, v, varianceDelta)
-        assertEquals("Skewness is different", gskewness, sk, skewnessDelta)
-        assertEquals("Kurtosis is different", gkurtosis, kur, kurtosisDelta)
+        assertEquals("Mean is different", m, gm, meanDelta)
+        assertEquals("Variance is different", v, gv, varianceDelta)
+        assertEquals("Skewness is different", sk, gskewness, skewnessDelta)
+        assertEquals("Kurtosis is different", kur, gkurtosis, kurtosisDelta)
     }
 
     @Throws(InterruptedException::class)
@@ -220,18 +272,20 @@ class InstrumentedTestLogNorm {
     }
 
     companion object {
-        private const val APP_NAME = "MVVM"
+        private const val APP_NAME = "Intents + RecyclerView"
         private const val THREAD_DELAY: Long = 10
-        private const val MAX_TIMEOUT: Long = 500_000
+        private const val MAX_TIMEOUT: Long = 31_000 // 50sec
 
         private var grade = 0
         private var totalTests = 0
         private var maxGrade = 0
         private var passTests = 0
 
+        private var sizeId = 0
         private var meanId = 0
         private var varianceId = 0
-        private var getNumId = 0
+        private var getRandomNumId = 0
+        private var recyclerViewId = 0
         private var resultNumId = 0
 
         @BeforeClass
@@ -261,7 +315,7 @@ class InstrumentedTestLogNorm {
 }
 
 class DoubleComparison(
-    private val mean: Double,
+    private val mean: Int,
     private val std: Double,
     private val testInstance: InstrumentedTestLogNorm
 ) :
@@ -271,17 +325,12 @@ class DoubleComparison(
         assertTrue(view is TextView)
         val gotValue = (view as TextView).text.toString()
 
-        // todo remove
-        // only for test
-        testInstance.setFlag(true)
-
-        if (testInstance.getFlag() || view.accessibilityClassName == "android.widget.TextView") {
+        /*if (testInstance.getFlag() || view.accessibilityClassName == "android.widget.TextView"){
             testInstance.setFlag(true)
         } else {
             assertEquals("View has an incorrect accessibilityClassName", "TextView", "EditText")
-        }
-        // Log.d("Tests", "got = $gotValue")
-        // val f = (trueValue == gotValue)
+        }*/
+
         val num = gotValue.toDouble()
         testInstance.setLastNumber(num)
         testInstance.addGeneratedNumber(num)
@@ -296,13 +345,15 @@ class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandl
         // Log anything you want here
         if (error != null) {
             val newError = Throwable(
+
                 extraMessage + "     " + error.message?.substring(
                     0,
                     min( //todo change length
-                        500, error.message?.length ?: 0
+                        100, error.message?.length ?: 0
                     )
                 ) + "...", error.cause
             )
+
             // Then delegate the error handling to the default handler which will throw an exception
             delegate.handle(newError, viewMatcher)
         }
