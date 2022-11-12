@@ -3,15 +3,15 @@
   <component name="AndroidTestResultsUserPreferences">
     <option name="androidTestResultsTableState">
       <map>
-        <entry key="-1610908079">
+        <entry key="-381723095">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
                 <map>
                   <entry key="Duration" value="90" />
+                  <entry key="R5CN101EXDT" value="120" />
                   <entry key="Tests" value="360" />
-                  <entry key="adb-R3CRA0F2A0N-drwnM5._adb-tls-connect._tcp." value="120" />
-                  <entry key="samsung&#10; SM-N986B" value="120" />
+                  <entry key="samsung&#10; SM-G988B" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
