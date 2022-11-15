@@ -12,10 +12,6 @@
         android:name=".MainApplication"
         android:theme="@style/Theme.Lab23">
         <activity
-            android:name=".GeneratedListActivity"
-            android:exported="false">
-        </activity>
-        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Lab23.NoActionBar">

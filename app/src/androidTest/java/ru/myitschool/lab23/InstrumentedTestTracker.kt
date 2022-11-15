@@ -14,6 +14,7 @@ import androidx.test.espresso.base.DefaultFailureHandler
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasPackage
 import androidx.test.espresso.intent.matcher.IntentMatchers.isInternal
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
@@ -22,6 +23,8 @@ import io.github.kakaocup.kakao.edit.KEditText
 import io.github.kakaocup.kakao.recycler.KRecyclerItem
 import io.github.kakaocup.kakao.recycler.KRecyclerView
 import io.github.kakaocup.kakao.screen.Screen
+import io.github.kakaocup.kakao.spinner.KSpinner
+import io.github.kakaocup.kakao.spinner.KSpinnerItem
 import io.github.kakaocup.kakao.text.KButton
 import io.github.kakaocup.kakao.text.KTextView
 import junit.framework.TestCase.assertEquals
@@ -33,10 +36,8 @@ import org.hamcrest.Matcher
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import java.security.SecureRandom
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.min
@@ -52,15 +53,15 @@ class InstrumentedTestLogNorm {
     private var outFlag = false
     private var lastNumber = 0.0
 
-    private var limit = 500 // 300 for 1m 36s
+    private val limit = 2
     private var index = 0
-    private var k = 1
-    private var lambda = 1.0
+    private var mean = 0.0
+    private var variance = 1.0
 
     private val meanDelta = 1e-1
-    private val varianceDelta = 0.9
-    private val skewnessDelta = 0.9
-    private val kurtosisDelta = 0.9 // 3.1
+    private val varianceDelta = 2.1
+    private val skewnessDelta = 1.7
+    private val kurtosisDelta = 49.7 // 3.1
 
     private var generatedNums = ArrayList<Double>(0)
 
@@ -82,30 +83,30 @@ class InstrumentedTestLogNorm {
         //configuration.setLayoutDirection(Locale.UK)
         appContext = nonLocalizedContext.createConfigurationContext(configuration)
 
-        limit = SecureRandom().nextInt(limit) + 1
-        k = random.nextInt(10_000)
-        lambda = (SecureRandom().nextDouble() + random.nextDouble() + 1e-3) *
-               (random.nextInt(1000) + 1e-1)
-
-
         val intent = Intent(appContext, MainActivity::class.java)
         //intent.putExtra("long number", inputNumbers[index])
-        Log.d("Tests", "index = $limit $k $lambda")
+        Log.d("Tests", "index = $index")
 
         activityScenario = ActivityScenario.launch(intent)
 
-        sizeId = appContext.resources
-            .getIdentifier("size_param", "id", appContext.opPackageName)
-        meanId = appContext.resources
-            .getIdentifier("shape_param", "id", appContext.opPackageName)
-        varianceId = appContext.resources
-            .getIdentifier("rate_param", "id", appContext.opPackageName)
-        getRandomNumId = appContext.resources
-            .getIdentifier("get_random_nums", "id", appContext.opPackageName)
-        recyclerViewId = appContext.resources
-            .getIdentifier("generated_list", "id", appContext.opPackageName)
-        resultNumId = appContext.resources
-            .getIdentifier("random_number_result", "id", appContext.opPackageName)
+        efAmountCardId = appContext.resources
+            .getIdentifier("ef_amount_card", "id", appContext.opPackageName)
+        efCurrentBalanceTextId = appContext.resources
+            .getIdentifier("ef_current_balance_text", "id", appContext.opPackageName)
+        efExpensesRvId = appContext.resources
+            .getIdentifier("ef_expenses_rv", "id", appContext.opPackageName)
+        expenseTypeTextId = appContext.resources
+            .getIdentifier("expense_type_text", "id", appContext.opPackageName)
+        expenseAmountTextId = appContext.resources
+            .getIdentifier("expense_amount_text", "id", appContext.opPackageName)
+        typeSpinnerId = appContext.resources
+            .getIdentifier("type_spinner", "id", appContext.opPackageName)
+        expenseAmountEditTextId = appContext.resources
+            .getIdentifier("expense_amount_edit_text", "id", appContext.opPackageName)
+        addButtonId = appContext.resources
+            .getIdentifier("add_button", "id", appContext.opPackageName)
+        addFabId = appContext.resources
+            .getIdentifier("add_fab", "id", appContext.opPackageName)
 
     }
 
@@ -128,33 +129,39 @@ class InstrumentedTestLogNorm {
         addTestToStat(1)
         checkInterface(
             intArrayOf(
-                sizeId,
-                meanId,
-                varianceId,
-                getRandomNumId)
+                efAmountCardId, efCurrentBalanceTextId, efExpensesRvId, addFabId
+            )
         )
 
-        Intents.init()
         /*run {
             mainTestCheckStep()
             addTestToPass(1)
         }*/
         mainTestCheckStep()
         addTestToPass(1)
-        Intents.release()
     }
 
     private fun mainTestCheckStep() {
         class Item(parent: Matcher<View>) : KRecyclerItem<Double>(parent) {
-            val name = KTextView(parent) { withId(resultNumId) }
+            val type = KEditText(parent) { withId(expenseTypeTextId) }
+            //todo
+            val date = KEditText(parent) { withId(expenseTypeTextId) }
+            val amount = KEditText(parent) { withId(expenseAmountTextId) }
         }
         class SearchScreen : Screen<SearchScreen>() {
-            val sizeView = KEditText { withId(sizeId) }
-            val meanView = KEditText { withId(meanId) }
-            val varianceView = KEditText { withId(varianceId) }
-            val getRandomNum = KButton { withId(getRandomNumId) }
+            val efAmountCard = KTextView { withId(efAmountCardId) }
+            val efCurrentBalanceText = KTextView { withId(efCurrentBalanceTextId) }
+            val addFab = KButton { withId(addFabId) }
+
+            val typeSpinner = KSpinner(
+                builder = { withId(typeSpinnerId) },
+                itemTypeBuilder = { itemType(::KSpinnerItem) }
+            )
+            val expenseAmountEditText = KEditText { withId(expenseAmountEditTextId) }
+            val addButton = KButton { withId(addButtonId) }
+
             val recyclerView = KRecyclerView(
-                builder = { withId(recyclerViewId) },
+                builder = { withId(efExpensesRvId) },
                 itemTypeBuilder = { itemType (::Item) }
             )
         }
@@ -163,31 +170,79 @@ class InstrumentedTestLogNorm {
 
         val screen = SearchScreen()
         screen {
-            meanView.clearText()
-            varianceView.clearText()
-            sizeView.typeText("$limit")
-            meanView.typeText("$k")
-            varianceView.typeText("$lambda")
-            closeSoftKeyboard()
-            getRandomNum.click()
+            addFab.click()
 
-            Intents.intended(
-                anyOf(
-                    isInternal(),
-                    hasPackage("ru.myitschool.lab23"),
-                )
-            )
+/*            spinner {
+                isVisible()
+                hasSize(10)
+
+                open()
+
+                emptyFirstChild {
+                    isVisible()
+                    hasText("Title 0")
+                }
+
+                childAt<KSpinnerItem>(1) {
+                    isVisible()
+                    hasText("Title 1")
+                }
+
+                emptyLastChild {
+                    isVisible()
+                    hasText("Title 9")
+                }
+
+                emptyChildWith {
+                    isInstanceOf(String::class.java)
+                    equals("Title 5")
+                }
+
+                emptyChildAt(4) {
+                    isDisplayed()
+                    hasText("Title 4")
+                    click()
+                }
+
+                hasText("Title 4")
+            }
+        }*/
+
+            typeSpinner {
+                isVisible()
+                hasSize(2)
+
+                open()
+
+                emptyFirstChild {
+                    isVisible()
+                    hasText("Income")
+                }
+
+                emptyLastChild {
+                    isVisible()
+                    hasText("Expenses")
+                    click()
+                }
+
+                hasText("Expenses")
+            }
+            expenseAmountEditText.typeText("100")
+            closeSoftKeyboard()
+
+            addButton.click()
 
             Log.d("Tests", "${recyclerView.getSize()}")
             assertEquals("List has inappropriate number of elements",
-                limit, recyclerView.getSize())
-            for (i in 0 until limit) {
+                1//limit
+                , recyclerView.getSize())
+            for (i in 0 until 1) {
                 Log.d("Tests", "${i}")
                 recyclerView {
                     childAt<Item>(i) {
-                        name.assert {
+                        amount {
                             isVisible()
-                            DoubleComparison(k, lambda, this@InstrumentedTestLogNorm)
+                            hasText("100.0")
                         }
                     }
                 }
@@ -197,55 +252,11 @@ class InstrumentedTestLogNorm {
             }
             // checking saving state after rotation
             rotateDevice(true)
-            // resultNum.hasText("$lastNumber")
             rotateDevice(false)
-            // resultNum.hasText("$lastNumber")
 
-            // Erlang dist
-            checkLogNorm(generatedNums,
-                k / lambda,
-                k / lambda / lambda,
-                2.0 * 1.0 / sqrt(k + 0.0),
-                6.0 / k
-            )
+            //todo check
+
         }
-    }
-
-    fun addGeneratedNumber(e : Double){
-        generatedNums.add(e)
-    }
-
-    fun setFlag(flag : Boolean){
-        outFlag = flag
-    }
-
-    fun getFlag(): Boolean{
-        return outFlag
-    }
-
-    fun setLastNumber(e : Double){
-        lastNumber = e
-    }
-
-    /**
-     * checks mean and std^2 for the whole selection
-     * mean and variance
-     */
-    fun checkLogNorm(a: ArrayList<Double>, m: Double, v: Double, sk: Double, kur: Double){
-        val d = a.toDoubleArray()
-        Log.d("Tests", "got = $a")
-        val gm = StatUtils.mean(d)
-        val gv = StatUtils.variance(d)
-        val gskewness = DescriptiveStatistics(d).skewness
-        val gkurtosis = DescriptiveStatistics(d).kurtosis
-        Log.d("Tests",
-            "${abs(gm - m)} ${abs(gv - v)} " +
-                    "${abs(gskewness - sk)} ${abs(gkurtosis - kur)}"
-        )
-        assertEquals("Mean is different", m, gm, meanDelta)
-        assertEquals("Variance is different", v, gv, varianceDelta)
-        assertEquals("Skewness is different", sk, gskewness, skewnessDelta)
-        assertEquals("Kurtosis is different", kur, gkurtosis, kurtosisDelta)
     }
 
     @Throws(InterruptedException::class)
@@ -272,27 +283,32 @@ class InstrumentedTestLogNorm {
     }
 
     companion object {
-        private const val APP_NAME = "Intents + RecyclerView"
+        private const val APP_NAME = "MVVM"
         private const val THREAD_DELAY: Long = 10
-        private const val MAX_TIMEOUT: Long = 31_000 // 50sec
+        private const val MAX_TIMEOUT: Long = 300_000 // 50sec
 
         private var grade = 0
         private var totalTests = 0
         private var maxGrade = 0
         private var passTests = 0
 
-        private var sizeId = 0
-        private var meanId = 0
-        private var varianceId = 0
-        private var getRandomNumId = 0
-        private var recyclerViewId = 0
-        private var resultNumId = 0
+        private var efAmountCardId = 0
+        private var efCurrentBalanceTextId = 0
+        private var efExpensesRvId = 0
+        private var expenseTypeTextId = 0
+        private var expenseAmountTextId = 0
+        private var typeSpinnerId = 0
+        private var expenseAmountEditTextId = 0
+        private var addButtonId = 0
+        private var addFabId = 0
 
         @BeforeClass
         @JvmStatic
         fun enableAccessibilityChecks() {
             IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.SECONDS);
             IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.SECONDS);
+            val uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+            uiDevice.pressHome()
         }
 
         @AfterClass
@@ -314,29 +330,6 @@ class InstrumentedTestLogNorm {
     }
 }
 
-class DoubleComparison(
-    private val mean: Int,
-    private val std: Double,
-    private val testInstance: InstrumentedTestLogNorm
-) :
-    ViewAssertion {
-    override fun check(view: View?, noViewFoundException: NoMatchingViewException?) {
-        if (noViewFoundException != null) throw noViewFoundException
-        assertTrue(view is TextView)
-        val gotValue = (view as TextView).text.toString()
-
-        /*if (testInstance.getFlag() || view.accessibilityClassName == "android.widget.TextView"){
-            testInstance.setFlag(true)
-        } else {
-            assertEquals("View has an incorrect accessibilityClassName", "TextView", "EditText")
-        }*/
-
-        val num = gotValue.toDouble()
-        testInstance.setLastNumber(num)
-        testInstance.addGeneratedNumber(num)
-    }
-}
-
 class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandler {
     var extraMessage = ""
     var delegate: DefaultFailureHandler = DefaultFailureHandler(instrumentation.targetContext)
@@ -348,8 +341,8 @@ class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandl
 
                 extraMessage + "     " + error.message?.substring(
                     0,
-                    min(
-                        100, error.message?.length ?: 0
+                    min( //todo change length
+                        100000, error.message?.length ?: 0
                     )
                 ) + "...", error.cause
             )

@@ -1,84 +1,137 @@
 package ru.myitschool.lab23
 
-import android.content.Intent
+
+
+import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.os.Bundle
+import android.text.TextUtils
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Spinner
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import ru.myitschool.lab23.databinding.ActivityMainBinding
-import ru.myitschool.lab23.ui.main.MainViewModel
 import java.util.*
-import java.util.stream.DoubleStream
-import kotlin.math.exp
-import kotlin.math.ln
-import kotlin.math.sqrt
-import kotlin.streams.toList
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: MainViewModel by viewModel<MainViewModel>()
+    private lateinit var viewModel: ExpensesViewModel
+
+    private var date = ""
+    private var type = "Income"
+    private val bud = 0.0
+    private val cat: List<String> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // setContentView(R.layout.activity_main)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.content.getRandomNums.setOnClickListener {
-            val mean = binding.content.shapeParam.text.toString().toInt()
-            val variance = binding.content.rateParam.text.toString().toDouble()
+        viewModel = ViewModelProvider(this).get(ExpensesViewModel::class.java)
+        //viewModel.setBudget(0.0);
 
-            viewModel.setGeneratedListData(DoubleStream.generate { generateErlang(mean, variance) }
-                .limit(binding.content.sizeParam.text.toString().toLong()).toList())
-
-            val openGeneratedListActivity = Intent(this, GeneratedListActivity::class.java)
-            startActivity(openGeneratedListActivity)
+        binding.addFab.setOnClickListener { view ->
+            showAddExpenseDialog()
         }
-
-        /*binding.content.getRandomNum.setOnClickListener {
-            val mean = binding.content.meanVal.text.toString().toDouble()
-            val variance = binding.content.varianceValue.text.toString().toDouble()
-            val res = exp(Random().nextGaussian() * sqrt(variance) + mean)
-            binding.content.randomNumberResult.setText(res.toString())
-            binding.content.getRandomNum.text = res.toString()
-            binding.content.varianceValue.setTextColor(Color.GREEN)
-
-        }*/
-
-        /*if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, MainFragment.newInstance())
-                .commitNow()
-        }*/
-
-        // binding.message.text = binding.container.javaClass.canonicalName
-        // VISIBILITY
-        // LAYOUT change according to resources UK lang
-
-        /*val ch : CheckBox? = null; val tg : ToggleButton? = null;
-        val bt : CompoundButton? = ch;
-        val v : View? = null;
-
-        *//*open class MyView : TextView() {
-
-        }*//*
-
-        Thread {
-            Thread.sleep(8_000)
-            runOnUiThread {
-                Log.d("Tests", "invalidated")
-                binding.main.maxWidth = 100
-                // binding.main.invalidate()
-                // binding.message.invalidate()
-            }
-        }.start()*/
     }
 
-    private fun generateNumber(m : Double, v : Double) = exp(Random().nextGaussian() * sqrt(v) + m)
 
-    private fun generateErlang(k : Int, l : Double) = - 1.0 / l *
-                DoubleStream.generate { ln( Random().nextDouble() ) }
-            .limit(k.toLong() - 1).sum()
+    private fun showAddExpenseDialog() {
+        val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+        val layoutInflater = layoutInflater
+        val dialogView: View = layoutInflater.inflate(R.layout.add_expense_dialog, null)
+        dialogBuilder.setView(dialogView)
+        val amount = dialogView.findViewById<EditText>(R.id.expense_amount_edit_text)
+        val type_spinner = dialogView.findViewById<Spinner>(R.id.type_spinner)
+        val chip_group_categories = dialogView.findViewById<ChipGroup>(R.id.chip_group_categories)
+        val choose_date = dialogView.findViewById<TextView>(R.id.choose_date)
+        val add = dialogView.findViewById<Button>(R.id.add_button)
+        val b: AlertDialog = dialogBuilder.create()
+        b.show()
+        for (i in cat.indices) {
+            val inflater = LayoutInflater.from(this)
+            val newChip =
+                inflater.inflate(R.layout.layout_chip_entry, chip_group_categories, false) as Chip
+            newChip.setText(cat.get(i))
+            newChip.isCloseIconVisible = false
+            chip_group_categories.addView(newChip)
+        }
+        val types = arrayOf("Income", "Expenses")
+        val arrayAdapter: ArrayAdapter<*> =
+            ArrayAdapter<Any?>(applicationContext, android.R.layout.simple_spinner_item, types)
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        type_spinner.adapter = arrayAdapter
+        add.setOnClickListener { view: View? ->
+            val a = amount.text.toString()
+            if (TextUtils.isEmpty(a)) {
+                amount.error = "Enter amount of money!"
+            } else {
+                val expense = Expense()
+                expense.amount = a.toDouble()
+                /*for (i in 0 until chip_group_categories.childCount) {
+                    val chip = chip_group_categories.getChildAt(i) as Chip
+                    if (chip.isChecked || chip.isSelected) {
+                        expense.category = chip.text.toString()
+                    }
+                }*/
+                expense.category = "Food"
+                expense.date = "11.11.2022"//choose_date.text.toString()
+                expense.type = type
+                val id = UUID.randomUUID().toString() + expense.category
+                // todo
+                viewModel.addExpense(id, expense)
+                if (type.equals("Income"))
+                    viewModel.setBudget(bud + a.toDouble());
+                else
+                    viewModel.setBudget(bud - a.toDouble());
+
+
+                /*databaseReference.child(id.uppercase()).setValue(expense)
+                if (type.equals("Income")) FirebaseDatabase.getInstance()
+                    .getReference("user/" + user.getUid()).child("budget")
+                    .setValue(bud + a.toDouble()) else FirebaseDatabase.getInstance()
+                    .getReference("user/" + user.getUid()).child("budget")
+                    .setValue(bud - a.toDouble())*/
+                b.dismiss()
+            }
+        }
+        choose_date.setOnClickListener { view: View? ->
+            val c: Calendar = Calendar.getInstance()
+            val mYear: Int = c.get(Calendar.YEAR)
+            val mMonth: Int = c.get(Calendar.MONTH)
+            val mDay: Int = c.get(Calendar.DAY_OF_MONTH)
+            val dataPickerDialog =
+                DatePickerDialog(
+                    this@MainActivity,
+                    { datePicker, i, i1, i2 ->
+                        var i1 = i1
+                        i1++
+                        var x = ""
+                        if (i1 < 10) x = "0"
+                        date = "$i2.$i1.$i"
+                        choose_date.text = "$i2.$x$i1.$i"
+                    }, mYear, mMonth, mDay
+                )
+            dataPickerDialog.show()
+        }
+        type_spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(adapterView: AdapterView<*>?, view: View, i: Int, l: Long) {
+                type = types[i]
+            }
+
+            override fun onNothingSelected(adapterView: AdapterView<*>?) {}
+        }
+    }
+
 }
