@@ -39,6 +39,10 @@ public class ExpensesViewModel extends ViewModel {
         return expenses;
     }
 
+    public void removeExpense(Expense e) {
+        expenses.getValue().values().remove(e);
+    }
+
     public LiveData<Double> getBudget() {
         return budget;
     }

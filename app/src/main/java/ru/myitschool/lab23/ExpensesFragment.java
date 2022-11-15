@@ -5,8 +5,10 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.UUID;
 
 import ru.myitschool.lab23.databinding.FragmentExpensesBinding;
 
@@ -54,6 +57,50 @@ public class ExpensesFragment extends Fragment {
         });
 
         return binding.getRoot();
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        int position = -1;
+        try {
+            position = mAdapter.getPosition();
+        } catch (Exception e) {
+            return super.onContextItemSelected(item);
+        }
+        switch (item.getItemId()) {
+            // delete
+            case 101:
+                Toast.makeText(getContext(), position + "Sample", Toast.LENGTH_LONG).show();
+                Expense e = expenses.get(position);
+                if (e.getType().equals("Income")) {
+                    viewModel.setBudget(- e.getAmount());
+                } else {
+                    viewModel.setBudget(+ e.getAmount());
+                }
+                viewModel.removeExpense(e);
+                expenses = new ArrayList<>(viewModel.getExpenses().getValue().values());
+                mAdapter = new MAdapter(getContext(), expenses);
+                binding.efExpensesRv.setAdapter(mAdapter);
+                //mAdapter.notifyItemChanged(position);
+                break;
+            // duplicate
+            case 102:
+                Toast.makeText(getContext(), position + "102", Toast.LENGTH_LONG).show();
+                viewModel.addExpense(UUID.randomUUID().toString(), expenses.get(position));
+                Expense e1 = expenses.get(position);
+                if (e1.getType().equals("Income")) {
+                    viewModel.setBudget(+ e1.getAmount());
+                } else {
+                    viewModel.setBudget(- e1.getAmount());
+                }
+                expenses = new ArrayList<>(viewModel.getExpenses().getValue().values());
+                mAdapter = new MAdapter(getContext(), expenses);
+                binding.efExpensesRv.setAdapter(mAdapter);
+                //expenses.add(expenses.get(position));
+                //mAdapter.notifyItemChanged(expenses.size() - 1);
+                break;
+        }
+        return super.onContextItemSelected(item);
     }
 
     private void filter(String text) {

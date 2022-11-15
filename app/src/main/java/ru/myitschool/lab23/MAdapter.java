@@ -2,7 +2,9 @@ package ru.myitschool.lab23;
 
 
 import android.content.Context;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -19,6 +21,8 @@ public class MAdapter extends RecyclerView.Adapter<MAdapter.ExpenseViewHolder> {
 
     private ArrayList<Expense> expenses = new ArrayList<Expense>();
     private Context context;
+
+    private int position = 0;
 
     public MAdapter(Context context, ArrayList<Expense> expenses) {
         this.expenses = expenses;
@@ -42,6 +46,14 @@ public class MAdapter extends RecyclerView.Adapter<MAdapter.ExpenseViewHolder> {
         holder.date.setText(expenses.get(position).getDate());
         holder.amount.setText(Double.valueOf(expenses.get(position).getAmount()).toString());
 
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                setPosition(holder.getAdapterPosition());
+                return false;
+            }
+        });
+
     }
 
     @Override
@@ -49,7 +61,14 @@ public class MAdapter extends RecyclerView.Adapter<MAdapter.ExpenseViewHolder> {
         return expenses.size();
     }
 
-    public static class ExpenseViewHolder extends RecyclerView.ViewHolder {
+    public int getPosition() {
+        return position;
+    }
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public static class ExpenseViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
 
         private TextView category, date, amount, type;
 
@@ -61,9 +80,19 @@ public class MAdapter extends RecyclerView.Adapter<MAdapter.ExpenseViewHolder> {
             amount = itemView.findViewById(R.id.expense_amount_text);
             type = itemView.findViewById(R.id.expense_type_text);
 
+            itemView.setOnCreateContextMenuListener(this);
+
 
         }
 
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            //menuInfo is null
+            menu.add(Menu.NONE, 101,
+                    Menu.NONE, R.string.action_delete);
+            menu.add(Menu.NONE, 102,
+                    Menu.NONE, R.string.action_duplicate);
+        }
     }
 
     public void updateList(List<Expense> list) {
