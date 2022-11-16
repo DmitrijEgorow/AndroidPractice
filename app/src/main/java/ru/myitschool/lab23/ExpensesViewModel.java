@@ -9,33 +9,34 @@ import androidx.lifecycle.ViewModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class ExpensesViewModel extends ViewModel {
-    private final MutableLiveData<Map<String, Expense>> expenses = new MutableLiveData<>(new HashMap<>());
+    private final MutableLiveData<TreeMap<String, Expense>> expenses = new MutableLiveData<>(new TreeMap<>());
     private final MutableLiveData<Double> budget = new MutableLiveData<>(0.0);
 
     private static class ExpensesList {
-        public Map<String, Expense> expenses = new HashMap<>();
+        public TreeMap<String, Expense> expenses = new TreeMap<>();
         public double budget = 0.0;
 
         public ExpensesList() {
         }
 
-        public ExpensesList(Map<String, Expense> e, double b) {
+        public ExpensesList(TreeMap<String, Expense> e, double b) {
             this.expenses = e;
             this.budget = b;
         }
     }
 
     public ExpensesViewModel() {
-        Map<String, Expense> map = new HashMap<>();
+        TreeMap<String, Expense> map = new TreeMap<>();
         //map.put("s", new Expense(100, "Food", "25.10.2022", "Expenses"));
         expenses.setValue(map);
         budget.setValue(0.0);
 
     }
 
-    public LiveData<Map<String, Expense>> getExpenses() {
+    public LiveData<TreeMap<String, Expense>> getExpenses() {
         return expenses;
     }
 
@@ -48,7 +49,7 @@ public class ExpensesViewModel extends ViewModel {
     }
 
     public void addExpense(String id, Expense e) {
-        Map<String, Expense> map = expenses.getValue();
+        TreeMap<String, Expense> map = expenses.getValue();
         map.put(id, e);
         expenses.setValue(map);
         for (Expense ex : expenses.getValue().values()) {

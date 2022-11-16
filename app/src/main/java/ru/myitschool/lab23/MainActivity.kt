@@ -4,16 +4,12 @@ package ru.myitschool.lab23
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.chip.Chip
@@ -87,9 +83,14 @@ class MainActivity : AppCompatActivity() {
                 }*/
                 expense.category = "Food"
                 expense.date = "11.11.2022"//choose_date.text.toString()
+                val sdf = SimpleDateFormat("dd.MM.yyyy", Locale.UK)
+                val date: String = sdf.format(System.currentTimeMillis())
+                expense.date = date
                 expense.type = type
-                val id = UUID.randomUUID().toString() + expense.category
-                // todo
+                // id
+                val sdf1 = SimpleDateFormat("yyyyMMddHHmmss", Locale.UK)
+                val id = // UUID.randomUUID().toString() +
+                    sdf1.format(System.currentTimeMillis())//  + expense.category
                 viewModel.addExpense(id, expense)
                 if (type.equals("Income"))
                     viewModel.setBudget(bud + a.toDouble());

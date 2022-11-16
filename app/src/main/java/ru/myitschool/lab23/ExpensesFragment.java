@@ -1,6 +1,7 @@
 package ru.myitschool.lab23;
 
 
+import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import ru.myitschool.lab23.databinding.FragmentExpensesBinding;
@@ -86,7 +88,10 @@ public class ExpensesFragment extends Fragment {
             // duplicate
             case 102:
                 Toast.makeText(getContext(), position + "102", Toast.LENGTH_LONG).show();
-                viewModel.addExpense(UUID.randomUUID().toString(), expenses.get(position));
+                // id
+                SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMddHHmmss", Locale.UK);
+                viewModel.addExpense(// UUID.randomUUID().toString() +
+                        sdf1.format(System.currentTimeMillis()) , expenses.get(position));
                 Expense e1 = expenses.get(position);
                 if (e1.getType().equals("Income")) {
                     viewModel.setBudget(+ e1.getAmount());
