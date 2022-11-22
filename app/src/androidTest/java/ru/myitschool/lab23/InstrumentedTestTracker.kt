@@ -81,8 +81,6 @@ class InstrumentedTestTracker {
 
         activityScenario = ActivityScenario.launch(intent)
 
-        efAmountCardId =
-            appContext.resources.getIdentifier("ef_amount_card", "id", appContext.opPackageName)
         efCurrentBalanceTextId = appContext.resources.getIdentifier(
             "ef_current_balance_text",
             "id",
@@ -132,7 +130,7 @@ class InstrumentedTestTracker {
         addTestToStat(limit + 3)
         checkInterface(
             intArrayOf(
-                efAmountCardId, efCurrentBalanceTextId, efExpensesRvId, addFabId
+                efCurrentBalanceTextId, efExpensesRvId, addFabId
             ), CHECK_INTERFACE_MESSAGE
         )
 
@@ -154,7 +152,6 @@ class InstrumentedTestTracker {
         }
 
         class SearchScreen : Screen<SearchScreen>() {
-            val efAmountCard = KTextView { withId(efAmountCardId) }
             val efCurrentBalanceText = KTextView { withId(efCurrentBalanceTextId) }
             val addFab = KButton { withId(addFabId) }
 
@@ -386,7 +383,6 @@ class InstrumentedTestTracker {
         private var maxGrade = 0
         private var passTests = 0
 
-        private var efAmountCardId = 0
         private var efCurrentBalanceTextId = 0
         private var efExpensesRvId = 0
         private var expenseTypeTextId = 0

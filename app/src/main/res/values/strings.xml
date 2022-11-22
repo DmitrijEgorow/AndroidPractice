@@ -2,5 +2,4 @@
     <string name="app_name">Lab39</string>
     <string name="action_delete">Delete</string>
     <string name="action_duplicate">Duplicate</string>
-    <string name="expenses">expenses</string>
 </resources>
