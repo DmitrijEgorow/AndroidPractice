@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name">Lab39</string>
-    <string name="action_delete">Delete</string>
-    <string name="action_duplicate">Duplicate</string>
-    <string name="expenses">expenses</string>
+    <string name="app_name">Lab28</string>
+    <string name="main_text_button">Test Button</string>
 </resources>
