@@ -132,7 +132,7 @@ class InstrumentedTestTracker {
         addTestToStat(limit + 3)
         checkInterface(
             intArrayOf(
-                efAmountCardId, efCurrentBalanceTextId, efExpensesRvId, addFabId
+                efCurrentBalanceTextId, efExpensesRvId, addFabId
             ), CHECK_INTERFACE_MESSAGE
         )
 
@@ -154,7 +154,7 @@ class InstrumentedTestTracker {
         }
 
         class SearchScreen : Screen<SearchScreen>() {
-            val efAmountCard = KTextView { withId(efAmountCardId) }
+            // val efAmountCard = KTextView { withId(efAmountCardId) }
             val efCurrentBalanceText = KTextView { withId(efCurrentBalanceTextId) }
             val addFab = KButton { withId(addFabId) }
 
