@@ -95,9 +95,9 @@ public class IntermediateTest {
 
         if (title != null && text != null) {
             if (title.getText().equals("Update requested") && text.getText().equals("RESUMED")) {
-                score++;
-                passTests++;
-                grade += 10;
+                score = 1;
+                passTests = 1;
+                grade = 10;
             } else {
                 throw new AssertionError("incorrect notification text");
             }
@@ -126,8 +126,8 @@ public class IntermediateTest {
 
     @BeforeClass
     public static void enableAccessibilityChecks() {
-        totalTests++;
-        maxGrade += 10;
+        totalTests = 1;
+        maxGrade = 10;
 
         Bundle results = new Bundle();
         results.putInt("passTests", passTests);
