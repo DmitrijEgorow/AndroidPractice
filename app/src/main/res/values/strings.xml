@@ -1,10 +1,3 @@
 <resources>
-    <string name="app_name">Мои датчики</string>
-    <string name="distance_100m">100 m</string>
-    <string name="distance_200m">200m</string>
-    <string name="medley_team">Medley team</string>
-    <string name="freestyle_team">Freestyle team</string>
-    <string name="match_teams">Create teams</string>
-    <string name="text_400m_men">400m men</string>
-    <string name="error_text">All fields are required</string>
+    <string name="app_name">Vickrey Auction</string>
 </resources>
