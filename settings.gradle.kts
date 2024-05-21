@@ -1,8 +1,10 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
-        gradlePluginPortal()
         google()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 dependencyResolutionManagement {
@@ -12,5 +14,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Lab23"
-include ':app'
+rootProject.name = "LabSICampus"
+include(":app")
