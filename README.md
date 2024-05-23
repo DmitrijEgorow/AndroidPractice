@@ -19,7 +19,7 @@ Each practical assignment contributes to 2 branches:
 2. **Switch to the desired branch:**
     * For test templates: `git checkout server_lab`
 3. **Open the project in Android Studio.**
-4. **Add all missing files and run UI tests**
+4. **Add all missing files and run UI tests.**
 
 ### Contributing
 
