@@ -1,31 +1,27 @@
 package ru.myitschool.lab23
 
-import android.app.Instrumentation
-import android.content.Context
-import android.content.Intent
-import android.content.pm.ActivityInfo
-import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
-import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.*
-import androidx.test.espresso.base.DefaultFailureHandler
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasPackage
 import androidx.test.espresso.intent.matcher.IntentMatchers.isInternal
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
 import io.github.kakaocup.kakao.edit.KEditText
 import io.github.kakaocup.kakao.recycler.KRecyclerItem
 import io.github.kakaocup.kakao.recycler.KRecyclerView
 import io.github.kakaocup.kakao.screen.Screen
 import io.github.kakaocup.kakao.text.KButton
 import io.github.kakaocup.kakao.text.KTextView
+import java.security.SecureRandom
+import java.util.*
+import java.util.concurrent.TimeUnit
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
+import kotlin.math.abs
+import kotlin.math.sqrt
 import org.apache.commons.math3.stat.StatUtils
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
 import org.hamcrest.CoreMatchers.anyOf
@@ -33,27 +29,18 @@ import org.hamcrest.Matcher
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import java.security.SecureRandom
-import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
-import kotlin.math.abs
-import kotlin.math.exp
-import kotlin.math.min
-import kotlin.math.sqrt
+import ru.myitschool.lab23.core.BaseTest
+import ru.myitschool.lab23.core.MetricsService
 
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @MediumTest
-class InstrumentedTestLogNorm {
-    //add/remove seed
-    private val random = Random()
+class InstrumentedTestLogNorm : BaseTest() {
     private var outFlag = false
     private var lastNumber = 0.0
 
     private var limit = 500 // 300 for 1m 36s
-    private var index = 0
     private var k = 1
     private var lambda = 1.0
 
@@ -64,35 +51,16 @@ class InstrumentedTestLogNorm {
 
     private var generatedNums = ArrayList<Double>(0)
 
-    private var activityScenario: ActivityScenario<MainActivity>? = null
-    private var handler: DescriptionFailureHandler? = null
+    private val hitchThresholdNanos = 16_666_667L // ~60 FPS threshold
 
-    private lateinit var appContext: Context
-    private lateinit var mInstrumentation: Instrumentation
 
-    @Before
-    fun setUp() {
-        mInstrumentation = InstrumentationRegistry.getInstrumentation()
-        handler = DescriptionFailureHandler(mInstrumentation)
-        Espresso.setFailureHandler(handler)
-
-        val nonLocalizedContext = mInstrumentation.targetContext
-        val configuration = nonLocalizedContext.resources.configuration
-        configuration.setLocale(Locale.UK)
-        //configuration.setLayoutDirection(Locale.UK)
-        appContext = nonLocalizedContext.createConfigurationContext(configuration)
-
+    override fun beforeTest() {
         limit = SecureRandom().nextInt(limit) + 1
         k = random.nextInt(10_000)
         lambda = (SecureRandom().nextDouble() + random.nextDouble() + 1e-3) *
-               (random.nextInt(1000) + 1e-1)
+                (random.nextInt(1000) + 1e-1)
 
-
-        val intent = Intent(appContext, MainActivity::class.java)
-        //intent.putExtra("long number", inputNumbers[index])
         Log.d("Tests", "index = $limit $k $lambda")
-
-        activityScenario = ActivityScenario.launch(intent)
 
         sizeId = appContext.resources
             .getIdentifier("size_param", "id", appContext.opPackageName)
@@ -109,20 +77,6 @@ class InstrumentedTestLogNorm {
 
     }
 
-    private fun checkInterface(ids: IntArray, message: String = "?") {
-        var id = 1
-        for (e in ids) {
-            id *= e
-        }
-        if (message != "?") {
-            Assert.assertNotEquals(message, 0, id.toLong())
-        } else {
-            Assert.assertNotEquals(0, id.toLong())
-        }
-
-    }
-
-
     @Test(timeout = MAX_TIMEOUT)
     fun mainTest() {
         addTestToStat(1)
@@ -131,23 +85,50 @@ class InstrumentedTestLogNorm {
                 sizeId,
                 meanId,
                 varianceId,
-                getRandomNumId)
+                getRandomNumId
+            )
         )
 
         Intents.init()
-        /*run {
-            mainTestCheckStep()
-            addTestToPass(1)
-        }*/
         mainTestCheckStep()
         addTestToPass(1)
         Intents.release()
+    }
+
+    @Test(timeout = MAX_TIMEOUT)
+    fun performanceTest() {
+        addTestToStat(1)
+        Intents.init()
+        fastRenderTest()
+        Thread.sleep(5_000)
+        Intents.release()
+    }
+
+    private fun fastRenderTest() {
+        val metricsService = MetricsService.PerformanceMetricsService(
+            MetricsService.PerformanceListener { s, frames ->
+                val jankFrames = frames.count { it > hitchThresholdNanos }
+                if (frames.isNotEmpty()) {
+                    val jankRatio = jankFrames / frames.size
+                    assertTrue(
+                        performanceIssueText +
+                                "obtained one frame render time: ${frames[0]}",
+                        jankRatio - 0.1 < 0
+                    )
+                }
+                addTestToPass(1)
+            })
+        limit = 2
+        metricsService.startTraceRecord()
+        mainTestCheckStep()
+        metricsService.stopTraceRecord("main intents")
     }
 
     private fun mainTestCheckStep() {
         class Item(parent: Matcher<View>) : KRecyclerItem<Double>(parent) {
             val name = KTextView(parent) { withId(resultNumId) }
         }
+
         class SearchScreen : Screen<SearchScreen>() {
             val sizeView = KEditText { withId(sizeId) }
             val meanView = KEditText { withId(meanId) }
@@ -155,11 +136,9 @@ class InstrumentedTestLogNorm {
             val getRandomNum = KButton { withId(getRandomNumId) }
             val recyclerView = KRecyclerView(
                 builder = { withId(recyclerViewId) },
-                itemTypeBuilder = { itemType (::Item) }
+                itemTypeBuilder = { itemType(::Item) }
             )
         }
-
-
 
         val screen = SearchScreen()
         screen {
@@ -179,21 +158,20 @@ class InstrumentedTestLogNorm {
             )
 
             Log.d("Tests", "${recyclerView.getSize()}")
-            assertEquals("List has inappropriate number of elements",
-                limit, recyclerView.getSize())
+            assertEquals(
+                "List has inappropriate number of elements",
+                limit, recyclerView.getSize()
+            )
             for (i in 0 until limit) {
                 Log.d("Tests", "${i}")
                 recyclerView {
                     childAt<Item>(i) {
                         name.assert {
                             isVisible()
-                            DoubleComparison(k, lambda, this@InstrumentedTestLogNorm)
+                            LastNumberViewAssertion(k, lambda, this@InstrumentedTestLogNorm)
                         }
                     }
                 }
-                /*recyclerView.assert {
-                    DoubleComparison(mean, variance, this@InstrumentedTestLogNorm)
-                }*/
             }
             // checking saving state after rotation
             rotateDevice(true)
@@ -202,7 +180,8 @@ class InstrumentedTestLogNorm {
             // resultNum.hasText("$lastNumber")
 
             // Erlang dist
-            checkLogNorm(generatedNums,
+            checkLogNorm(
+                generatedNums,
                 k / lambda,
                 k / lambda / lambda,
                 2.0 * 1.0 / sqrt(k + 0.0),
@@ -211,19 +190,19 @@ class InstrumentedTestLogNorm {
         }
     }
 
-    fun addGeneratedNumber(e : Double){
+    fun addGeneratedNumber(e: Double) {
         generatedNums.add(e)
     }
 
-    fun setFlag(flag : Boolean){
+    fun setFlag(flag: Boolean) {
         outFlag = flag
     }
 
-    fun getFlag(): Boolean{
+    fun getFlag(): Boolean {
         return outFlag
     }
 
-    fun setLastNumber(e : Double){
+    fun setLastNumber(e: Double) {
         lastNumber = e
     }
 
@@ -231,14 +210,15 @@ class InstrumentedTestLogNorm {
      * checks mean and std^2 for the whole selection
      * mean and variance
      */
-    fun checkLogNorm(a: ArrayList<Double>, m: Double, v: Double, sk: Double, kur: Double){
+    fun checkLogNorm(a: ArrayList<Double>, m: Double, v: Double, sk: Double, kur: Double) {
         val d = a.toDoubleArray()
         Log.d("Tests", "got = $a")
         val gm = StatUtils.mean(d)
         val gv = StatUtils.variance(d)
         val gskewness = DescriptiveStatistics(d).skewness
         val gkurtosis = DescriptiveStatistics(d).kurtosis
-        Log.d("Tests",
+        Log.d(
+            "Tests",
             "${abs(gm - m)} ${abs(gv - v)} " +
                     "${abs(gskewness - sk)} ${abs(gkurtosis - kur)}"
         )
@@ -248,38 +228,13 @@ class InstrumentedTestLogNorm {
         assertEquals("Kurtosis is different", kur, gkurtosis, kurtosisDelta)
     }
 
-    @Throws(InterruptedException::class)
-    private fun rotateDevice(landscapeMode: Boolean) {
-        if (landscapeMode) {
-            activityScenario!!.onActivity { activity ->
-                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            }
-        } else {
-            activityScenario!!.onActivity { activity ->
-                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            }
-        }
-    }
-
-    private fun addTestToStat(incMaxTotal: Int) {
-        totalTests++
-        maxGrade += incMaxTotal
-    }
-
-    private fun addTestToPass(incGrade: Int) {
-        passTests++
-        grade += incGrade
-    }
-
     companion object {
         private const val APP_NAME = "Intents + RecyclerView"
         private const val THREAD_DELAY: Long = 10
-        private const val MAX_TIMEOUT: Long = 31_000 // 50sec
+        private const val MAX_TIMEOUT: Long = 31_000 // 31 sec
 
-        private var grade = 0
-        private var totalTests = 0
-        private var maxGrade = 0
-        private var passTests = 0
+        private const val performanceIssueText = "Exceeded time for rendering, " +
+                "consider performance optimizations"
 
         private var sizeId = 0
         private var meanId = 0
@@ -294,27 +249,10 @@ class InstrumentedTestLogNorm {
             IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.SECONDS);
             IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.SECONDS);
         }
-
-        @AfterClass
-        @JvmStatic
-        fun printResult() {
-            val mInstrumentation = InstrumentationRegistry.getInstrumentation()
-            val uiDevice = UiDevice.getInstance(mInstrumentation)
-            uiDevice.pressHome()
-
-            val results = Bundle()
-            results.putInt("passTests", passTests)
-            results.putInt("totalTests", totalTests)
-            results.putInt("grade", grade)
-            results.putInt("maxGrade", maxGrade)
-            InstrumentationRegistry.getInstrumentation().addResults(results)
-            Log.d("Tests", passTests.toString() + " из " + totalTests + " тестов пройдено.")
-            Log.d("Tests", grade.toString() + " из " + maxGrade + " баллов получено.")
-        }
     }
 }
 
-class DoubleComparison(
+class LastNumberViewAssertion(
     private val mean: Int,
     private val std: Double,
     private val testInstance: InstrumentedTestLogNorm
@@ -334,28 +272,5 @@ class DoubleComparison(
         val num = gotValue.toDouble()
         testInstance.setLastNumber(num)
         testInstance.addGeneratedNumber(num)
-    }
-}
-
-class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandler {
-    var extraMessage = ""
-    var delegate: DefaultFailureHandler = DefaultFailureHandler(instrumentation.targetContext)
-
-    override fun handle(error: Throwable?, viewMatcher: Matcher<View>?) {
-        // Log anything you want here
-        if (error != null) {
-            val newError = Throwable(
-
-                extraMessage + "     " + error.message?.substring(
-                    0,
-                    min(
-                        100, error.message?.length ?: 0
-                    )
-                ) + "...", error.cause
-            )
-
-            // Then delegate the error handling to the default handler which will throw an exception
-            delegate.handle(newError, viewMatcher)
-        }
     }
 }
