@@ -1,21 +1,12 @@
 package ru.myitschool.lab23
 
-import android.app.Instrumentation
-import android.content.Context
-import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.icu.text.SimpleDateFormat
-import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.*
-import androidx.test.espresso.base.DefaultFailureHandler
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
-import androidx.test.uiautomator.UiDevice
 import io.github.kakaocup.kakao.edit.KEditText
 import io.github.kakaocup.kakao.recycler.KRecyclerItem
 import io.github.kakaocup.kakao.recycler.KRecyclerView
@@ -24,22 +15,19 @@ import io.github.kakaocup.kakao.spinner.KSpinner
 import io.github.kakaocup.kakao.spinner.KSpinnerItem
 import io.github.kakaocup.kakao.text.KButton
 import io.github.kakaocup.kakao.text.KTextView
+import java.util.*
 import junit.framework.TestCase.assertEquals
 import org.hamcrest.Matcher
 import org.junit.*
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.math.min
+import ru.myitschool.lab23.core.BaseTest
 
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @MediumTest
-class InstrumentedTestTracker {
-    //add/remove seed
-    private val random = Random()
+class InstrumentedTestTracker : BaseTest() {
     private var outFlag = false
     private var lastNumber = 0.0
 
@@ -55,31 +43,8 @@ class InstrumentedTestTracker {
     private val income = "Income"
     private val expenses = "Expenses"
 
-    private var activityScenario: ActivityScenario<MainActivity>? = null
-    private var handler: DescriptionFailureHandler? = null
-    private var uiDevice: UiDevice? = null
-
-    private lateinit var appContext: Context
-    private lateinit var mInstrumentation: Instrumentation
-
-    @Before
-    fun setUp() {
-        mInstrumentation = InstrumentationRegistry.getInstrumentation()
-        handler = DescriptionFailureHandler(mInstrumentation)
-        uiDevice = UiDevice.getInstance(mInstrumentation)
-        Espresso.setFailureHandler(handler)
-
-        val nonLocalizedContext = mInstrumentation.targetContext
-        val configuration = nonLocalizedContext.resources.configuration
-        configuration.setLocale(Locale.UK)
-        //configuration.setLayoutDirection(Locale.UK)
-        appContext = nonLocalizedContext.createConfigurationContext(configuration)
-
-        val intent = Intent(appContext, MainActivity::class.java)
-        //intent.putExtra("long number", inputNumbers[index])
+    override fun beforeTest() {
         Log.d("Tests", "index = $index")
-
-        activityScenario = ActivityScenario.launch(intent)
 
         efAmountCardId =
             appContext.resources.getIdentifier("ef_amount_card", "id", appContext.opPackageName)
@@ -112,20 +77,6 @@ class InstrumentedTestTracker {
 
     }
 
-    private fun checkInterface(ids: IntArray, message: String = "?") {
-        var id = 1
-        for (e in ids) {
-            id *= e
-        }
-        if (message != "?") {
-            Assert.assertNotEquals(message, 0, id.toLong())
-        } else {
-            Assert.assertNotEquals(0, id.toLong())
-        }
-
-    }
-
-
     @Test(timeout = MAX_TIMEOUT)
     fun mainTest() {
         //
@@ -135,20 +86,14 @@ class InstrumentedTestTracker {
                 efCurrentBalanceTextId, efExpensesRvId, addFabId
             ), CHECK_INTERFACE_MESSAGE
         )
-
-        /*run {
-            mainTestCheckStep()
-            addTestToPass(1)
-        }*/
         mainTestCheckStep()
-        //addTestToPass(1)
+        // addTestToPass(1)
     }
 
     private fun mainTestCheckStep() {
         class Item(parent: Matcher<View>) : KRecyclerItem<Double>(parent) {
             val type = KEditText(parent) { withId(expenseTypeTextId) }
 
-            //todo
             val date = KEditText(parent) { withId(expenseDateTextId) }
             val amount = KEditText(parent) { withId(expenseAmountTextId) }
         }
@@ -166,7 +111,6 @@ class InstrumentedTestTracker {
             val recyclerView = KRecyclerView(builder = { withId(efExpensesRvId) },
                 itemTypeBuilder = { itemType(::Item) })
         }
-
 
         val screen = SearchScreen()
         screen {
@@ -225,7 +169,9 @@ class InstrumentedTestTracker {
 
                     if ((i % 2 == 0) and (count > 0)) {
                         handler?.extraMessage =
-                            "Attempt to delete an element with index ${count - 1}, len = ${recyclerView.getSize()}"
+                            StringBuilder(
+                                "Attempt to delete an element with index ${count - 1}, len = ${recyclerView.getSize()}"
+                            )
                         recyclerView {
                             childAt<Item>(count - 1) {
                                 amount {
@@ -237,12 +183,14 @@ class InstrumentedTestTracker {
                         count--
                         Thread.sleep(THREAD_DELAY)
                         efCurrentBalanceText.hasText("-${inputValue * count}.0")
-                        handler?.extraMessage = ""
+                        handler?.extraMessage = StringBuilder("")
                     }
 
                     if ((i % 3 == 0) and (count > 0)) {
                         handler?.extraMessage =
-                            "Attempt to duplicate an element with index ${count - 1}, len = ${recyclerView.getSize()}"
+                            StringBuilder(
+                                "Attempt to duplicate an element with index ${count - 1}, len = ${recyclerView.getSize()}"
+                            )
                         recyclerView {
                             childAt<Item>(count - 1) {
                                 amount {
@@ -254,12 +202,14 @@ class InstrumentedTestTracker {
                         count++
                         Thread.sleep(THREAD_DELAY)
                         efCurrentBalanceText.hasText("-${inputValue * count}.0")
-                        handler?.extraMessage = ""
+                        handler?.extraMessage = StringBuilder("")
                     }
 
                     if ((i % 5 == 0) and (count > 0)) {
                         handler?.extraMessage =
-                            "Attempt to delete an element with index 0, len = ${recyclerView.getSize()}"
+                            StringBuilder(
+                                "Attempt to delete an element with index 0, len = ${recyclerView.getSize()}"
+                            )
                         recyclerView {
                             childAt<Item>(0) {
                                 amount {
@@ -271,7 +221,7 @@ class InstrumentedTestTracker {
                         count--
                         Thread.sleep(THREAD_DELAY)
                         efCurrentBalanceText.hasText("-${inputValue * count}.0")
-                        handler?.extraMessage = ""
+                        handler?.extraMessage = StringBuilder("")
                     }
                 }
             }
@@ -337,41 +287,15 @@ class InstrumentedTestTracker {
 
             // checks saving state after rotation
             rotateDevice(true)
-            handler?.extraMessage = "Rotating device"
+            handler?.extraMessage = StringBuilder("Rotating device")
             Thread.sleep(THREAD_DELAY)
             assertEquals(
                 "RecyclerView has inappropriate number of elements", count, recyclerView.getSize()
             )
             addTestToPass(1)
             rotateDevice(false)
-            handler?.extraMessage = ""
+            handler?.extraMessage = StringBuilder("")
 
-        }
-    }
-
-    @Throws(InterruptedException::class)
-    private fun rotateDevice(landscapeMode: Boolean) {
-        if (landscapeMode) {
-            activityScenario!!.onActivity { activity ->
-                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            }
-        } else {
-            activityScenario!!.onActivity { activity ->
-                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            }
-        }
-    }
-
-    private fun addTestToStat(incMaxTotal: Int) {
-        // totalTests++
-        maxGrade += incMaxTotal
-    }
-
-    private fun addTestToPass(incGrade: Int) {
-        // passTests++
-        grade += incGrade
-        if (grade == maxGrade) {
-            passTests = 1
         }
     }
 
@@ -396,53 +320,5 @@ class InstrumentedTestTracker {
         private var expenseAmountEditTextId = 0
         private var addButtonId = 0
         private var addFabId = 0
-
-        @BeforeClass
-        @JvmStatic
-        fun enableAccessibilityChecks() {
-            IdlingPolicies.setMasterPolicyTimeout(5, TimeUnit.SECONDS);
-            IdlingPolicies.setIdlingResourceTimeout(5, TimeUnit.SECONDS);
-            val uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-            uiDevice.pressHome()
-        }
-
-        @AfterClass
-        @JvmStatic
-        fun printResult() {
-            val mInstrumentation = InstrumentationRegistry.getInstrumentation()
-            val uiDevice = UiDevice.getInstance(mInstrumentation)
-            uiDevice.pressHome()
-
-            val results = Bundle()
-            results.putInt("passTests", passTests)
-            results.putInt("totalTests", totalTests)
-            results.putInt("grade", grade)
-            results.putInt("maxGrade", maxGrade)
-            InstrumentationRegistry.getInstrumentation().addResults(results)
-            Log.d("Tests", passTests.toString() + " из " + totalTests + " тестов пройдено.")
-            Log.d("Tests", grade.toString() + " из " + maxGrade + " баллов получено.")
-        }
-    }
-}
-
-class DescriptionFailureHandler(instrumentation: Instrumentation) : FailureHandler {
-    var extraMessage = ""
-    var delegate: DefaultFailureHandler = DefaultFailureHandler(instrumentation.targetContext)
-
-    override fun handle(error: Throwable?, viewMatcher: Matcher<View>?) {
-        // Log anything you want here
-        if (error != null) {
-            val newError = Throwable(
-
-                extraMessage + "     " + error.message?.substring(
-                    0, min( //todo change length
-                        100000, error.message?.length ?: 0
-                    )
-                ) + "...", error.cause
-            )
-
-            // Then delegate the error handling to the default handler which will throw an exception
-            delegate.handle(newError, viewMatcher)
-        }
     }
 }
