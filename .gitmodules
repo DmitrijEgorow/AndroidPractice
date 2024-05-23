@@ -1,0 +1,3 @@
+[submodule "app/src/androidTest/java/ru/myitschool/lab23/core"]
+	path = app/src/androidTest/java/ru/myitschool/lab23/core
+	url = https://github.com/DmitrijEgorow/AutomatedTestingSystemCore.git
